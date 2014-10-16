@@ -101,7 +101,11 @@ wdc_op = 1
 
 ;added Rockwell & WDC opcodes BBR, BBS, RMB & SMB
 ;(0=test as NOPs, 1=full test, >1=no test) 
+    if cpu65c12
+rkwl_wdc_op = 0
+    else
 rkwl_wdc_op = 1
+    endif
 
 ;report errors through I/O channel (0=use standard self trap loops, 1=include
 ;report.i65 as I/O channel, add 3 kB)

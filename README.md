@@ -1,3 +1,14 @@
+6502 tests
+----------
+This is a branch of https://github.com/Klaus2m5/6502_65C02_functional_tests
+
+Main changes are to act as a more effective test of the 65C12 processor in
+the BBC Micro emulator in jsbeeb.
+
+Below is the contents of the original readme:
+
+### 6502_65C02_functional_tests
+
 This is a set of functional tests for the 6502/65C02 type processors.
 
 The 6502_functionel_test.a65 is an assembler sourcecode to test all valid
@@ -21,5 +32,3 @@ http://forum.6502.org/viewtopic.php?f=2&t=2241
 
 Good luck debugging your emulator, simulator, fpga core, discrete
 logic implementation or whatever you have!
-
-

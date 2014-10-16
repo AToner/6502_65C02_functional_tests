@@ -1,7 +1,7 @@
 AS65 Assembler for R6502 [1.42].  Copyright 1994-2007, Frank A. Kingswood                                                Page    1
 ---------------------------------------------------- 6502_functional_test.a65 ----------------------------------------------------
 
-5803 lines read, no errors in pass 1.
+5801 lines read, no errors in pass 1.
                         ;
                         ; 6 5 0 2   F U N C T I O N A L   T E S T
                         ;
@@ -26,7 +26,6 @@ AS65 Assembler for R6502 [1.42].  Copyright 1994-2007, Frank A. Kingswood       
                         ; register bits.
                         ; 
                         ; version 16-aug-2013
-                        ; edited to provide a pre-configured bin file loadable at $0000 for full 64k
                         ; contact info at http://2m5.de or email K@2m5.de
                         ;
                         ; assembled with AS65 from http://www.kingswood-consulting.co.uk/assemblers/
@@ -372,8 +371,8 @@ ffff =                  ram_top = -1
                         ;macros to test (register|memory|zeropage) & status & (mask)
                         tst_stat    macro       ;testing flags in the processor status register
                                     php         ;save status
-                                    pla         ;use stack to retrieve status
-                                    pha
+                                    php         ;use stack to retrieve status
+                                    pla
                                     cmp_flag \1
                                     trap_ne
                                     plp         ;restore status
@@ -381,10 +380,10 @@ ffff =                  ram_top = -1
                                     
                         tst_a       macro       ;testing result in accu & flags
                                     php         ;save flags
+                                    php
                                     cmp #\1     ;test result
                                     trap_ne
                                     pla         ;load status
-                                    pha
                                     cmp_flag \2
                                     trap_ne
                                     plp         ;restore status
@@ -392,10 +391,10 @@ ffff =                  ram_top = -1
                         
                         tst_x       macro       ;testing result in x index & flags
                                     php         ;save flags
+                                    php
                                     cpx #\1     ;test result
                                     trap_ne
                                     pla         ;load status
-                                    pha
                                     cmp_flag \2
                                     trap_ne
                                     plp         ;restore status
@@ -403,10 +402,10 @@ ffff =                  ram_top = -1
                         
                         tst_y       macro       ;testing result in y index & flags
                                     php         ;save flags
+                                    php
                                     cpy #\1     ;test result
                                     trap_ne
                                     pla         ;load status
-                                    pha
                                     cmp_flag \2
                                     trap_ne
                                     plp         ;restore status
@@ -546,9 +545,7 @@ ffff =                  ram_top = -1
                             else
                                 bss                 ;uninitialized segment, copy of data at end of code!
                             endif
-                        ;        org zero_page
-0000 =                          org 0               ;edited to provide binaries loading from 0
-0000 : 00000000000000..         ds  zero_page
+000a =                          org zero_page
                         ;break test interrupt save
 000a : 00               irq_a   ds  1               ;a register
 000b : 00               irq_x   ds  1               ;x register
@@ -1568,12 +1565,12 @@ ffff =                  ram_top = -1
 073f : 48                       pha
                                 tst_a 1,$ff
 0740 : 08              >            php         ;save flags
-0741 : c901            >            cmp #1     ;test result
+0741 : 08              >            php
+0742 : c901            >            cmp #1     ;test result
                        >            trap_ne
-0743 : d0fe            >        bne *           ;failed not equal (non zero)
+0744 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0745 : 68              >            pla         ;load status
-0746 : 48              >            pha
+0746 : 68              >            pla         ;load status
                        >            cmp_flag $ff
 0747 : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -1593,12 +1590,12 @@ ffff =                  ram_top = -1
 0752 : 48                       pha
                                 tst_a 0,0
 0753 : 08              >            php         ;save flags
-0754 : c900            >            cmp #0     ;test result
+0754 : 08              >            php
+0755 : c900            >            cmp #0     ;test result
                        >            trap_ne
-0756 : d0fe            >        bne *           ;failed not equal (non zero)
+0757 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0758 : 68              >            pla         ;load status
-0759 : 48              >            pha
+0759 : 68              >            pla         ;load status
                        >            cmp_flag 0
 075a : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -1618,12 +1615,12 @@ ffff =                  ram_top = -1
 0765 : 48                       pha
                                 tst_a $ff,$ff
 0766 : 08              >            php         ;save flags
-0767 : c9ff            >            cmp #$ff     ;test result
+0767 : 08              >            php
+0768 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-0769 : d0fe            >        bne *           ;failed not equal (non zero)
+076a : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-076b : 68              >            pla         ;load status
-076c : 48              >            pha
+076c : 68              >            pla         ;load status
                        >            cmp_flag $ff
 076d : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -1643,12 +1640,12 @@ ffff =                  ram_top = -1
 0778 : 48                       pha
                                 tst_a 1,0
 0779 : 08              >            php         ;save flags
-077a : c901            >            cmp #1     ;test result
+077a : 08              >            php
+077b : c901            >            cmp #1     ;test result
                        >            trap_ne
-077c : d0fe            >        bne *           ;failed not equal (non zero)
+077d : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-077e : 68              >            pla         ;load status
-077f : 48              >            pha
+077f : 68              >            pla         ;load status
                        >            cmp_flag 0
 0780 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -1668,12 +1665,12 @@ ffff =                  ram_top = -1
 078b : 48                       pha
                                 tst_a 0,$ff
 078c : 08              >            php         ;save flags
-078d : c900            >            cmp #0     ;test result
+078d : 08              >            php
+078e : c900            >            cmp #0     ;test result
                        >            trap_ne
-078f : d0fe            >        bne *           ;failed not equal (non zero)
+0790 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0791 : 68              >            pla         ;load status
-0792 : 48              >            pha
+0792 : 68              >            pla         ;load status
                        >            cmp_flag $ff
 0793 : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -1693,12 +1690,12 @@ ffff =                  ram_top = -1
 079e : 48                       pha
                                 tst_a $ff,0
 079f : 08              >            php         ;save flags
-07a0 : c9ff            >            cmp #$ff     ;test result
+07a0 : 08              >            php
+07a1 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-07a2 : d0fe            >        bne *           ;failed not equal (non zero)
+07a3 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-07a4 : 68              >            pla         ;load status
-07a5 : 48              >            pha
+07a5 : 68              >            pla         ;load status
                        >            cmp_flag 0
 07a6 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -1718,12 +1715,12 @@ ffff =                  ram_top = -1
 07b1 : 68                       pla
                                 tst_a $ff,$ff-zero
 07b2 : 08              >            php         ;save flags
-07b3 : c9ff            >            cmp #$ff     ;test result
+07b3 : 08              >            php
+07b4 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-07b5 : d0fe            >        bne *           ;failed not equal (non zero)
+07b6 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-07b7 : 68              >            pla         ;load status
-07b8 : 48              >            pha
+07b8 : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 07b9 : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -1743,12 +1740,12 @@ ffff =                  ram_top = -1
 07c4 : 68                       pla
                                 tst_a 0,zero
 07c5 : 08              >            php         ;save flags
-07c6 : c900            >            cmp #0     ;test result
+07c6 : 08              >            php
+07c7 : c900            >            cmp #0     ;test result
                        >            trap_ne
-07c8 : d0fe            >        bne *           ;failed not equal (non zero)
+07c9 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-07ca : 68              >            pla         ;load status
-07cb : 48              >            pha
+07cb : 68              >            pla         ;load status
                        >            cmp_flag zero
 07cc : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -1768,12 +1765,12 @@ ffff =                  ram_top = -1
 07d7 : 68                       pla
                                 tst_a 1,$ff-zero-minus
 07d8 : 08              >            php         ;save flags
-07d9 : c901            >            cmp #1     ;test result
+07d9 : 08              >            php
+07da : c901            >            cmp #1     ;test result
                        >            trap_ne
-07db : d0fe            >        bne *           ;failed not equal (non zero)
+07dc : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-07dd : 68              >            pla         ;load status
-07de : 48              >            pha
+07de : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero-minus
 07df : c97d            >            cmp #($ff-zero-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -1793,12 +1790,12 @@ ffff =                  ram_top = -1
 07ea : 68                       pla
                                 tst_a $ff,minus
 07eb : 08              >            php         ;save flags
-07ec : c9ff            >            cmp #$ff     ;test result
+07ec : 08              >            php
+07ed : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-07ee : d0fe            >        bne *           ;failed not equal (non zero)
+07ef : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-07f0 : 68              >            pla         ;load status
-07f1 : 48              >            pha
+07f1 : 68              >            pla         ;load status
                        >            cmp_flag minus
 07f2 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -1818,12 +1815,12 @@ ffff =                  ram_top = -1
 07fd : 68                       pla
                                 tst_a 0,$ff-minus
 07fe : 08              >            php         ;save flags
-07ff : c900            >            cmp #0     ;test result
+07ff : 08              >            php
+0800 : c900            >            cmp #0     ;test result
                        >            trap_ne
-0801 : d0fe            >        bne *           ;failed not equal (non zero)
+0802 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0803 : 68              >            pla         ;load status
-0804 : 48              >            pha
+0804 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0805 : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -1843,12 +1840,12 @@ ffff =                  ram_top = -1
 0810 : 68                       pla
                                 tst_a 1,0
 0811 : 08              >            php         ;save flags
-0812 : c901            >            cmp #1     ;test result
+0812 : 08              >            php
+0813 : c901            >            cmp #1     ;test result
                        >            trap_ne
-0814 : d0fe            >        bne *           ;failed not equal (non zero)
+0815 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0816 : 68              >            pla         ;load status
-0817 : 48              >            pha
+0817 : 68              >            pla         ;load status
                        >            cmp_flag 0
 0818 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -1889,12 +1886,12 @@ ffff =                  ram_top = -1
 0837 : 49c3                     eor #$c3
                                 tst_a $ff,fn
 0839 : 08              >            php         ;save flags
-083a : c9ff            >            cmp #$ff     ;test result
+083a : 08              >            php
+083b : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-083c : d0fe            >        bne *           ;failed not equal (non zero)
+083d : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-083e : 68              >            pla         ;load status
-083f : 48              >            pha
+083f : 68              >            pla         ;load status
                        >            cmp_flag fn
 0840 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -1914,12 +1911,12 @@ ffff =                  ram_top = -1
 084b : 49c3                     eor #$c3
                                 tst_a 0,fz
 084d : 08              >            php         ;save flags
-084e : c900            >            cmp #0     ;test result
+084e : 08              >            php
+084f : c900            >            cmp #0     ;test result
                        >            trap_ne
-0850 : d0fe            >        bne *           ;failed not equal (non zero)
+0851 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0852 : 68              >            pla         ;load status
-0853 : 48              >            pha
+0853 : 68              >            pla         ;load status
                        >            cmp_flag fz
 0854 : c932            >            cmp #(fz|fao)&m8    ;expected flags + always on bits
                        >
@@ -1955,12 +1952,12 @@ ffff =                  ram_top = -1
 086f : ea                       nop
                                 tst_a $18,0
 0870 : 08              >            php         ;save flags
-0871 : c918            >            cmp #$18     ;test result
+0871 : 08              >            php
+0872 : c918            >            cmp #$18     ;test result
                        >            trap_ne
-0873 : d0fe            >        bne *           ;failed not equal (non zero)
+0874 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0875 : 68              >            pla         ;load status
-0876 : 48              >            pha
+0876 : 68              >            pla         ;load status
                        >            cmp_flag 0
 0877 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -1990,12 +1987,12 @@ ffff =                  ram_top = -1
 088e : ea                       nop
                                 tst_a $e7,$ff
 088f : 08              >            php         ;save flags
-0890 : c9e7            >            cmp #$e7     ;test result
+0890 : 08              >            php
+0891 : c9e7            >            cmp #$e7     ;test result
                        >            trap_ne
-0892 : d0fe            >        bne *           ;failed not equal (non zero)
+0893 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0894 : 68              >            pla         ;load status
-0895 : 48              >            pha
+0895 : 68              >            pla         ;load status
                        >            cmp_flag $ff
 0896 : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -2321,8 +2318,8 @@ ffff =                  ram_top = -1
 09ae : 18                       clc
                                 tst_stat $ff-carry
 09af : 08              >            php         ;save status
-09b0 : 68              >            pla         ;use stack to retrieve status
-09b1 : 48              >            pha
+09b0 : 08              >            php         ;use stack to retrieve status
+09b1 : 68              >            pla
                        >            cmp_flag $ff-carry
 09b2 : c9fe            >            cmp #($ff-carry|fao)&m8    ;expected flags + always on bits
                        >
@@ -2334,8 +2331,8 @@ ffff =                  ram_top = -1
 09b7 : 38                       sec
                                 tst_stat $ff
 09b8 : 08              >            php         ;save status
-09b9 : 68              >            pla         ;use stack to retrieve status
-09ba : 48              >            pha
+09b9 : 08              >            php         ;use stack to retrieve status
+09ba : 68              >            pla
                        >            cmp_flag $ff
 09bb : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -2348,8 +2345,8 @@ ffff =                  ram_top = -1
 09c0 : 58                       cli
                                 tst_stat $ff-intdis
 09c1 : 08              >            php         ;save status
-09c2 : 68              >            pla         ;use stack to retrieve status
-09c3 : 48              >            pha
+09c2 : 08              >            php         ;use stack to retrieve status
+09c3 : 68              >            pla
                        >            cmp_flag $ff-intdis
 09c4 : c9fb            >            cmp #($ff-intdis|fao)&m8    ;expected flags + always on bits
                        >
@@ -2361,8 +2358,8 @@ ffff =                  ram_top = -1
 09c9 : 78                       sei
                                 tst_stat $ff
 09ca : 08              >            php         ;save status
-09cb : 68              >            pla         ;use stack to retrieve status
-09cc : 48              >            pha
+09cb : 08              >            php         ;use stack to retrieve status
+09cc : 68              >            pla
                        >            cmp_flag $ff
 09cd : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -2375,8 +2372,8 @@ ffff =                  ram_top = -1
 09d2 : d8                       cld
                                 tst_stat $ff-decmode
 09d3 : 08              >            php         ;save status
-09d4 : 68              >            pla         ;use stack to retrieve status
-09d5 : 48              >            pha
+09d4 : 08              >            php         ;use stack to retrieve status
+09d5 : 68              >            pla
                        >            cmp_flag $ff-decmode
 09d6 : c9f7            >            cmp #($ff-decmode|fao)&m8    ;expected flags + always on bits
                        >
@@ -2388,8 +2385,8 @@ ffff =                  ram_top = -1
 09db : f8                       sed
                                 tst_stat $ff
 09dc : 08              >            php         ;save status
-09dd : 68              >            pla         ;use stack to retrieve status
-09de : 48              >            pha
+09dd : 08              >            php         ;use stack to retrieve status
+09de : 68              >            pla
                        >            cmp_flag $ff
 09df : c9ff            >            cmp #($ff|fao)&m8    ;expected flags + always on bits
                        >
@@ -2401,8 +2398,8 @@ ffff =                  ram_top = -1
 09e4 : b8                       clv
                                 tst_stat $ff-overfl
 09e5 : 08              >            php         ;save status
-09e6 : 68              >            pla         ;use stack to retrieve status
-09e7 : 48              >            pha
+09e6 : 08              >            php         ;use stack to retrieve status
+09e7 : 68              >            pla
                        >            cmp_flag $ff-overfl
 09e8 : c9bf            >            cmp #($ff-overfl|fao)&m8    ;expected flags + always on bits
                        >
@@ -2420,8 +2417,8 @@ ffff =                  ram_top = -1
                         
                                 tst_stat 0
 09f1 : 08              >            php         ;save status
-09f2 : 68              >            pla         ;use stack to retrieve status
-09f3 : 48              >            pha
+09f2 : 08              >            php         ;use stack to retrieve status
+09f3 : 68              >            pla
                        >            cmp_flag 0
 09f4 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -2433,8 +2430,8 @@ ffff =                  ram_top = -1
 09f9 : 38                       sec
                                 tst_stat carry
 09fa : 08              >            php         ;save status
-09fb : 68              >            pla         ;use stack to retrieve status
-09fc : 48              >            pha
+09fb : 08              >            php         ;use stack to retrieve status
+09fc : 68              >            pla
                        >            cmp_flag carry
 09fd : c931            >            cmp #(carry|fao)&m8    ;expected flags + always on bits
                        >
@@ -2446,8 +2443,8 @@ ffff =                  ram_top = -1
 0a02 : 18                       clc
                                 tst_stat 0  
 0a03 : 08              >            php         ;save status
-0a04 : 68              >            pla         ;use stack to retrieve status
-0a05 : 48              >            pha
+0a04 : 08              >            php         ;use stack to retrieve status
+0a05 : 68              >            pla
                        >            cmp_flag 0  
 0a06 : c930            >            cmp #(0  |fao)&m8    ;expected flags + always on bits
                        >
@@ -2460,8 +2457,8 @@ ffff =                  ram_top = -1
 0a0b : 78                       sei
                                 tst_stat intdis
 0a0c : 08              >            php         ;save status
-0a0d : 68              >            pla         ;use stack to retrieve status
-0a0e : 48              >            pha
+0a0d : 08              >            php         ;use stack to retrieve status
+0a0e : 68              >            pla
                        >            cmp_flag intdis
 0a0f : c934            >            cmp #(intdis|fao)&m8    ;expected flags + always on bits
                        >
@@ -2473,8 +2470,8 @@ ffff =                  ram_top = -1
 0a14 : 58                       cli
                                 tst_stat 0
 0a15 : 08              >            php         ;save status
-0a16 : 68              >            pla         ;use stack to retrieve status
-0a17 : 48              >            pha
+0a16 : 08              >            php         ;use stack to retrieve status
+0a17 : 68              >            pla
                        >            cmp_flag 0
 0a18 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -2487,8 +2484,8 @@ ffff =                  ram_top = -1
 0a1d : f8                       sed
                                 tst_stat decmode
 0a1e : 08              >            php         ;save status
-0a1f : 68              >            pla         ;use stack to retrieve status
-0a20 : 48              >            pha
+0a1f : 08              >            php         ;use stack to retrieve status
+0a20 : 68              >            pla
                        >            cmp_flag decmode
 0a21 : c938            >            cmp #(decmode|fao)&m8    ;expected flags + always on bits
                        >
@@ -2500,8 +2497,8 @@ ffff =                  ram_top = -1
 0a26 : d8                       cld
                                 tst_stat 0  
 0a27 : 08              >            php         ;save status
-0a28 : 68              >            pla         ;use stack to retrieve status
-0a29 : 48              >            pha
+0a28 : 08              >            php         ;use stack to retrieve status
+0a29 : 68              >            pla
                        >            cmp_flag 0  
 0a2a : c930            >            cmp #(0  |fao)&m8    ;expected flags + always on bits
                        >
@@ -2519,8 +2516,8 @@ ffff =                  ram_top = -1
                         
                                 tst_stat overfl
 0a33 : 08              >            php         ;save status
-0a34 : 68              >            pla         ;use stack to retrieve status
-0a35 : 48              >            pha
+0a34 : 08              >            php         ;use stack to retrieve status
+0a35 : 68              >            pla
                        >            cmp_flag overfl
 0a36 : c970            >            cmp #(overfl|fao)&m8    ;expected flags + always on bits
                        >
@@ -2532,8 +2529,8 @@ ffff =                  ram_top = -1
 0a3b : b8                       clv
                                 tst_stat 0
 0a3c : 08              >            php         ;save status
-0a3d : 68              >            pla         ;use stack to retrieve status
-0a3e : 48              >            pha
+0a3d : 08              >            php         ;use stack to retrieve status
+0a3e : 68              >            pla
                        >            cmp_flag 0
 0a3f : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -2566,12 +2563,12 @@ ffff =                  ram_top = -1
 0a56 : e8                       inx             ;ff
                                 tst_x $ff,$ff-zero
 0a57 : 08              >            php         ;save flags
-0a58 : e0ff            >            cpx #$ff     ;test result
+0a58 : 08              >            php
+0a59 : e0ff            >            cpx #$ff     ;test result
                        >            trap_ne
-0a5a : d0fe            >        bne *           ;failed not equal (non zero)
+0a5b : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0a5c : 68              >            pla         ;load status
-0a5d : 48              >            pha
+0a5d : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0a5e : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2583,12 +2580,12 @@ ffff =                  ram_top = -1
 0a63 : e8                       inx             ;00
                                 tst_x 0,$ff-minus
 0a64 : 08              >            php         ;save flags
-0a65 : e000            >            cpx #0     ;test result
+0a65 : 08              >            php
+0a66 : e000            >            cpx #0     ;test result
                        >            trap_ne
-0a67 : d0fe            >        bne *           ;failed not equal (non zero)
+0a68 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0a69 : 68              >            pla         ;load status
-0a6a : 48              >            pha
+0a6a : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0a6b : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2600,12 +2597,12 @@ ffff =                  ram_top = -1
 0a70 : e8                       inx             ;01
                                 tst_x 1,$ff-minus-zero
 0a71 : 08              >            php         ;save flags
-0a72 : e001            >            cpx #1     ;test result
+0a72 : 08              >            php
+0a73 : e001            >            cpx #1     ;test result
                        >            trap_ne
-0a74 : d0fe            >        bne *           ;failed not equal (non zero)
+0a75 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0a76 : 68              >            pla         ;load status
-0a77 : 48              >            pha
+0a77 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus-zero
 0a78 : c97d            >            cmp #($ff-minus-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2617,12 +2614,12 @@ ffff =                  ram_top = -1
 0a7d : ca                       dex             ;00
                                 tst_x 0,$ff-minus
 0a7e : 08              >            php         ;save flags
-0a7f : e000            >            cpx #0     ;test result
+0a7f : 08              >            php
+0a80 : e000            >            cpx #0     ;test result
                        >            trap_ne
-0a81 : d0fe            >        bne *           ;failed not equal (non zero)
+0a82 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0a83 : 68              >            pla         ;load status
-0a84 : 48              >            pha
+0a84 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0a85 : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2634,12 +2631,12 @@ ffff =                  ram_top = -1
 0a8a : ca                       dex             ;ff
                                 tst_x $ff,$ff-zero
 0a8b : 08              >            php         ;save flags
-0a8c : e0ff            >            cpx #$ff     ;test result
+0a8c : 08              >            php
+0a8d : e0ff            >            cpx #$ff     ;test result
                        >            trap_ne
-0a8e : d0fe            >        bne *           ;failed not equal (non zero)
+0a8f : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0a90 : 68              >            pla         ;load status
-0a91 : 48              >            pha
+0a91 : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0a92 : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2659,12 +2656,12 @@ ffff =                  ram_top = -1
 0a9c : e8                       inx             ;ff
                                 tst_x $ff,minus
 0a9d : 08              >            php         ;save flags
-0a9e : e0ff            >            cpx #$ff     ;test result
+0a9e : 08              >            php
+0a9f : e0ff            >            cpx #$ff     ;test result
                        >            trap_ne
-0aa0 : d0fe            >        bne *           ;failed not equal (non zero)
+0aa1 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0aa2 : 68              >            pla         ;load status
-0aa3 : 48              >            pha
+0aa3 : 68              >            pla         ;load status
                        >            cmp_flag minus
 0aa4 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2676,12 +2673,12 @@ ffff =                  ram_top = -1
 0aa9 : e8                       inx             ;00
                                 tst_x 0,zero
 0aaa : 08              >            php         ;save flags
-0aab : e000            >            cpx #0     ;test result
+0aab : 08              >            php
+0aac : e000            >            cpx #0     ;test result
                        >            trap_ne
-0aad : d0fe            >        bne *           ;failed not equal (non zero)
+0aae : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0aaf : 68              >            pla         ;load status
-0ab0 : 48              >            pha
+0ab0 : 68              >            pla         ;load status
                        >            cmp_flag zero
 0ab1 : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2693,12 +2690,12 @@ ffff =                  ram_top = -1
 0ab6 : e8                       inx             ;01
                                 tst_x 1,0
 0ab7 : 08              >            php         ;save flags
-0ab8 : e001            >            cpx #1     ;test result
+0ab8 : 08              >            php
+0ab9 : e001            >            cpx #1     ;test result
                        >            trap_ne
-0aba : d0fe            >        bne *           ;failed not equal (non zero)
+0abb : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0abc : 68              >            pla         ;load status
-0abd : 48              >            pha
+0abd : 68              >            pla         ;load status
                        >            cmp_flag 0
 0abe : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -2710,12 +2707,12 @@ ffff =                  ram_top = -1
 0ac3 : ca                       dex             ;00
                                 tst_x 0,zero
 0ac4 : 08              >            php         ;save flags
-0ac5 : e000            >            cpx #0     ;test result
+0ac5 : 08              >            php
+0ac6 : e000            >            cpx #0     ;test result
                        >            trap_ne
-0ac7 : d0fe            >        bne *           ;failed not equal (non zero)
+0ac8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0ac9 : 68              >            pla         ;load status
-0aca : 48              >            pha
+0aca : 68              >            pla         ;load status
                        >            cmp_flag zero
 0acb : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2727,12 +2724,12 @@ ffff =                  ram_top = -1
 0ad0 : ca                       dex             ;ff
                                 tst_x $ff,minus
 0ad1 : 08              >            php         ;save flags
-0ad2 : e0ff            >            cpx #$ff     ;test result
+0ad2 : 08              >            php
+0ad3 : e0ff            >            cpx #$ff     ;test result
                        >            trap_ne
-0ad4 : d0fe            >        bne *           ;failed not equal (non zero)
+0ad5 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0ad6 : 68              >            pla         ;load status
-0ad7 : 48              >            pha
+0ad7 : 68              >            pla         ;load status
                        >            cmp_flag minus
 0ad8 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2753,12 +2750,12 @@ ffff =                  ram_top = -1
 0ae3 : c8                       iny             ;ff
                                 tst_y $ff,$ff-zero
 0ae4 : 08              >            php         ;save flags
-0ae5 : c0ff            >            cpy #$ff     ;test result
+0ae5 : 08              >            php
+0ae6 : c0ff            >            cpy #$ff     ;test result
                        >            trap_ne
-0ae7 : d0fe            >        bne *           ;failed not equal (non zero)
+0ae8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0ae9 : 68              >            pla         ;load status
-0aea : 48              >            pha
+0aea : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0aeb : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2770,12 +2767,12 @@ ffff =                  ram_top = -1
 0af0 : c8                       iny             ;00
                                 tst_y 0,$ff-minus
 0af1 : 08              >            php         ;save flags
-0af2 : c000            >            cpy #0     ;test result
+0af2 : 08              >            php
+0af3 : c000            >            cpy #0     ;test result
                        >            trap_ne
-0af4 : d0fe            >        bne *           ;failed not equal (non zero)
+0af5 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0af6 : 68              >            pla         ;load status
-0af7 : 48              >            pha
+0af7 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0af8 : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2787,12 +2784,12 @@ ffff =                  ram_top = -1
 0afd : c8                       iny             ;01
                                 tst_y 1,$ff-minus-zero
 0afe : 08              >            php         ;save flags
-0aff : c001            >            cpy #1     ;test result
+0aff : 08              >            php
+0b00 : c001            >            cpy #1     ;test result
                        >            trap_ne
-0b01 : d0fe            >        bne *           ;failed not equal (non zero)
+0b02 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b03 : 68              >            pla         ;load status
-0b04 : 48              >            pha
+0b04 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus-zero
 0b05 : c97d            >            cmp #($ff-minus-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2804,12 +2801,12 @@ ffff =                  ram_top = -1
 0b0a : 88                       dey             ;00
                                 tst_y 0,$ff-minus
 0b0b : 08              >            php         ;save flags
-0b0c : c000            >            cpy #0     ;test result
+0b0c : 08              >            php
+0b0d : c000            >            cpy #0     ;test result
                        >            trap_ne
-0b0e : d0fe            >        bne *           ;failed not equal (non zero)
+0b0f : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b10 : 68              >            pla         ;load status
-0b11 : 48              >            pha
+0b11 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0b12 : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2821,12 +2818,12 @@ ffff =                  ram_top = -1
 0b17 : 88                       dey             ;ff
                                 tst_y $ff,$ff-zero
 0b18 : 08              >            php         ;save flags
-0b19 : c0ff            >            cpy #$ff     ;test result
+0b19 : 08              >            php
+0b1a : c0ff            >            cpy #$ff     ;test result
                        >            trap_ne
-0b1b : d0fe            >        bne *           ;failed not equal (non zero)
+0b1c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b1d : 68              >            pla         ;load status
-0b1e : 48              >            pha
+0b1e : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0b1f : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2846,12 +2843,12 @@ ffff =                  ram_top = -1
 0b29 : c8                       iny             ;ff
                                 tst_y $ff,0+minus
 0b2a : 08              >            php         ;save flags
-0b2b : c0ff            >            cpy #$ff     ;test result
+0b2b : 08              >            php
+0b2c : c0ff            >            cpy #$ff     ;test result
                        >            trap_ne
-0b2d : d0fe            >        bne *           ;failed not equal (non zero)
+0b2e : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b2f : 68              >            pla         ;load status
-0b30 : 48              >            pha
+0b30 : 68              >            pla         ;load status
                        >            cmp_flag 0+minus
 0b31 : c9b0            >            cmp #(0+minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2863,12 +2860,12 @@ ffff =                  ram_top = -1
 0b36 : c8                       iny             ;00
                                 tst_y 0,zero
 0b37 : 08              >            php         ;save flags
-0b38 : c000            >            cpy #0     ;test result
+0b38 : 08              >            php
+0b39 : c000            >            cpy #0     ;test result
                        >            trap_ne
-0b3a : d0fe            >        bne *           ;failed not equal (non zero)
+0b3b : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b3c : 68              >            pla         ;load status
-0b3d : 48              >            pha
+0b3d : 68              >            pla         ;load status
                        >            cmp_flag zero
 0b3e : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2880,12 +2877,12 @@ ffff =                  ram_top = -1
 0b43 : c8                       iny             ;01
                                 tst_y 1,0
 0b44 : 08              >            php         ;save flags
-0b45 : c001            >            cpy #1     ;test result
+0b45 : 08              >            php
+0b46 : c001            >            cpy #1     ;test result
                        >            trap_ne
-0b47 : d0fe            >        bne *           ;failed not equal (non zero)
+0b48 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b49 : 68              >            pla         ;load status
-0b4a : 48              >            pha
+0b4a : 68              >            pla         ;load status
                        >            cmp_flag 0
 0b4b : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -2897,12 +2894,12 @@ ffff =                  ram_top = -1
 0b50 : 88                       dey             ;00
                                 tst_y 0,zero
 0b51 : 08              >            php         ;save flags
-0b52 : c000            >            cpy #0     ;test result
+0b52 : 08              >            php
+0b53 : c000            >            cpy #0     ;test result
                        >            trap_ne
-0b54 : d0fe            >        bne *           ;failed not equal (non zero)
+0b55 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b56 : 68              >            pla         ;load status
-0b57 : 48              >            pha
+0b57 : 68              >            pla         ;load status
                        >            cmp_flag zero
 0b58 : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2914,12 +2911,12 @@ ffff =                  ram_top = -1
 0b5d : 88                       dey             ;ff
                                 tst_y $ff,minus
 0b5e : 08              >            php         ;save flags
-0b5f : c0ff            >            cpy #$ff     ;test result
+0b5f : 08              >            php
+0b60 : c0ff            >            cpy #$ff     ;test result
                        >            trap_ne
-0b61 : d0fe            >        bne *           ;failed not equal (non zero)
+0b62 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b63 : 68              >            pla         ;load status
-0b64 : 48              >            pha
+0b64 : 68              >            pla         ;load status
                        >            cmp_flag minus
 0b65 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2940,12 +2937,12 @@ ffff =                  ram_top = -1
 0b70 : 8a                       txa
                                 tst_a $ff,$ff-zero
 0b71 : 08              >            php         ;save flags
-0b72 : c9ff            >            cmp #$ff     ;test result
+0b72 : 08              >            php
+0b73 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-0b74 : d0fe            >        bne *           ;failed not equal (non zero)
+0b75 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b76 : 68              >            pla         ;load status
-0b77 : 48              >            pha
+0b77 : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0b78 : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -2960,12 +2957,12 @@ ffff =                  ram_top = -1
 0b80 : 8a                       txa
                                 tst_a 0,$ff-minus
 0b81 : 08              >            php         ;save flags
-0b82 : c900            >            cmp #0     ;test result
+0b82 : 08              >            php
+0b83 : c900            >            cmp #0     ;test result
                        >            trap_ne
-0b84 : d0fe            >        bne *           ;failed not equal (non zero)
+0b85 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b86 : 68              >            pla         ;load status
-0b87 : 48              >            pha
+0b87 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0b88 : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -2980,12 +2977,12 @@ ffff =                  ram_top = -1
 0b90 : 8a                       txa
                                 tst_a 1,$ff-minus-zero
 0b91 : 08              >            php         ;save flags
-0b92 : c901            >            cmp #1     ;test result
+0b92 : 08              >            php
+0b93 : c901            >            cmp #1     ;test result
                        >            trap_ne
-0b94 : d0fe            >        bne *           ;failed not equal (non zero)
+0b95 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0b96 : 68              >            pla         ;load status
-0b97 : 48              >            pha
+0b97 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus-zero
 0b98 : c97d            >            cmp #($ff-minus-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3004,12 +3001,12 @@ ffff =                  ram_top = -1
 0ba1 : 8a                       txa
                                 tst_a 1,0
 0ba2 : 08              >            php         ;save flags
-0ba3 : c901            >            cmp #1     ;test result
+0ba3 : 08              >            php
+0ba4 : c901            >            cmp #1     ;test result
                        >            trap_ne
-0ba5 : d0fe            >        bne *           ;failed not equal (non zero)
+0ba6 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0ba7 : 68              >            pla         ;load status
-0ba8 : 48              >            pha
+0ba8 : 68              >            pla         ;load status
                        >            cmp_flag 0
 0ba9 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -3024,12 +3021,12 @@ ffff =                  ram_top = -1
 0bb1 : 8a                       txa
                                 tst_a 0,zero
 0bb2 : 08              >            php         ;save flags
-0bb3 : c900            >            cmp #0     ;test result
+0bb3 : 08              >            php
+0bb4 : c900            >            cmp #0     ;test result
                        >            trap_ne
-0bb5 : d0fe            >        bne *           ;failed not equal (non zero)
+0bb6 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0bb7 : 68              >            pla         ;load status
-0bb8 : 48              >            pha
+0bb8 : 68              >            pla         ;load status
                        >            cmp_flag zero
 0bb9 : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3044,12 +3041,12 @@ ffff =                  ram_top = -1
 0bc1 : 8a                       txa
                                 tst_a $ff,minus
 0bc2 : 08              >            php         ;save flags
-0bc3 : c9ff            >            cmp #$ff     ;test result
+0bc3 : 08              >            php
+0bc4 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-0bc5 : d0fe            >        bne *           ;failed not equal (non zero)
+0bc6 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0bc7 : 68              >            pla         ;load status
-0bc8 : 48              >            pha
+0bc8 : 68              >            pla         ;load status
                        >            cmp_flag minus
 0bc9 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -3070,12 +3067,12 @@ ffff =                  ram_top = -1
 0bd4 : 98                       tya
                                 tst_a $ff,$ff-zero
 0bd5 : 08              >            php         ;save flags
-0bd6 : c9ff            >            cmp #$ff     ;test result
+0bd6 : 08              >            php
+0bd7 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-0bd8 : d0fe            >        bne *           ;failed not equal (non zero)
+0bd9 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0bda : 68              >            pla         ;load status
-0bdb : 48              >            pha
+0bdb : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0bdc : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3090,12 +3087,12 @@ ffff =                  ram_top = -1
 0be4 : 98                       tya
                                 tst_a 0,$ff-minus
 0be5 : 08              >            php         ;save flags
-0be6 : c900            >            cmp #0     ;test result
+0be6 : 08              >            php
+0be7 : c900            >            cmp #0     ;test result
                        >            trap_ne
-0be8 : d0fe            >        bne *           ;failed not equal (non zero)
+0be9 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0bea : 68              >            pla         ;load status
-0beb : 48              >            pha
+0beb : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0bec : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -3110,12 +3107,12 @@ ffff =                  ram_top = -1
 0bf4 : 98                       tya
                                 tst_a 1,$ff-minus-zero
 0bf5 : 08              >            php         ;save flags
-0bf6 : c901            >            cmp #1     ;test result
+0bf6 : 08              >            php
+0bf7 : c901            >            cmp #1     ;test result
                        >            trap_ne
-0bf8 : d0fe            >        bne *           ;failed not equal (non zero)
+0bf9 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0bfa : 68              >            pla         ;load status
-0bfb : 48              >            pha
+0bfb : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus-zero
 0bfc : c97d            >            cmp #($ff-minus-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3134,12 +3131,12 @@ ffff =                  ram_top = -1
 0c05 : 98                       tya
                                 tst_a 1,0
 0c06 : 08              >            php         ;save flags
-0c07 : c901            >            cmp #1     ;test result
+0c07 : 08              >            php
+0c08 : c901            >            cmp #1     ;test result
                        >            trap_ne
-0c09 : d0fe            >        bne *           ;failed not equal (non zero)
+0c0a : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c0b : 68              >            pla         ;load status
-0c0c : 48              >            pha
+0c0c : 68              >            pla         ;load status
                        >            cmp_flag 0
 0c0d : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -3154,12 +3151,12 @@ ffff =                  ram_top = -1
 0c15 : 98                       tya
                                 tst_a 0,zero
 0c16 : 08              >            php         ;save flags
-0c17 : c900            >            cmp #0     ;test result
+0c17 : 08              >            php
+0c18 : c900            >            cmp #0     ;test result
                        >            trap_ne
-0c19 : d0fe            >        bne *           ;failed not equal (non zero)
+0c1a : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c1b : 68              >            pla         ;load status
-0c1c : 48              >            pha
+0c1c : 68              >            pla         ;load status
                        >            cmp_flag zero
 0c1d : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3174,12 +3171,12 @@ ffff =                  ram_top = -1
 0c25 : 98                       tya
                                 tst_a $ff,minus
 0c26 : 08              >            php         ;save flags
-0c27 : c9ff            >            cmp #$ff     ;test result
+0c27 : 08              >            php
+0c28 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-0c29 : d0fe            >        bne *           ;failed not equal (non zero)
+0c2a : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c2b : 68              >            pla         ;load status
-0c2c : 48              >            pha
+0c2c : 68              >            pla         ;load status
                        >            cmp_flag minus
 0c2d : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -3199,12 +3196,12 @@ ffff =                  ram_top = -1
 0c39 : a8                       tay
                                 tst_y $ff,$ff-zero
 0c3a : 08              >            php         ;save flags
-0c3b : c0ff            >            cpy #$ff     ;test result
+0c3b : 08              >            php
+0c3c : c0ff            >            cpy #$ff     ;test result
                        >            trap_ne
-0c3d : d0fe            >        bne *           ;failed not equal (non zero)
+0c3e : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c3f : 68              >            pla         ;load status
-0c40 : 48              >            pha
+0c40 : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0c41 : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3220,12 +3217,12 @@ ffff =                  ram_top = -1
 0c4a : a8                       tay
                                 tst_y 0,$ff-minus
 0c4b : 08              >            php         ;save flags
-0c4c : c000            >            cpy #0     ;test result
+0c4c : 08              >            php
+0c4d : c000            >            cpy #0     ;test result
                        >            trap_ne
-0c4e : d0fe            >        bne *           ;failed not equal (non zero)
+0c4f : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c50 : 68              >            pla         ;load status
-0c51 : 48              >            pha
+0c51 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0c52 : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -3241,12 +3238,12 @@ ffff =                  ram_top = -1
 0c5b : a8                       tay
                                 tst_y 1,$ff-minus-zero
 0c5c : 08              >            php         ;save flags
-0c5d : c001            >            cpy #1     ;test result
+0c5d : 08              >            php
+0c5e : c001            >            cpy #1     ;test result
                        >            trap_ne
-0c5f : d0fe            >        bne *           ;failed not equal (non zero)
+0c60 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c61 : 68              >            pla         ;load status
-0c62 : 48              >            pha
+0c62 : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus-zero
 0c63 : c97d            >            cmp #($ff-minus-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3265,12 +3262,12 @@ ffff =                  ram_top = -1
 0c6f : a8                       tay
                                 tst_y 1,0
 0c70 : 08              >            php         ;save flags
-0c71 : c001            >            cpy #1     ;test result
+0c71 : 08              >            php
+0c72 : c001            >            cpy #1     ;test result
                        >            trap_ne
-0c73 : d0fe            >        bne *           ;failed not equal (non zero)
+0c74 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c75 : 68              >            pla         ;load status
-0c76 : 48              >            pha
+0c76 : 68              >            pla         ;load status
                        >            cmp_flag 0
 0c77 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -3286,12 +3283,12 @@ ffff =                  ram_top = -1
 0c80 : a8                       tay
                                 tst_y 0,zero
 0c81 : 08              >            php         ;save flags
-0c82 : c000            >            cpy #0     ;test result
+0c82 : 08              >            php
+0c83 : c000            >            cpy #0     ;test result
                        >            trap_ne
-0c84 : d0fe            >        bne *           ;failed not equal (non zero)
+0c85 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c86 : 68              >            pla         ;load status
-0c87 : 48              >            pha
+0c87 : 68              >            pla         ;load status
                        >            cmp_flag zero
 0c88 : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3307,12 +3304,12 @@ ffff =                  ram_top = -1
 0c91 : a8                       tay
                                 tst_y $ff,minus
 0c92 : 08              >            php         ;save flags
-0c93 : c0ff            >            cpy #$ff     ;test result
+0c93 : 08              >            php
+0c94 : c0ff            >            cpy #$ff     ;test result
                        >            trap_ne
-0c95 : d0fe            >        bne *           ;failed not equal (non zero)
+0c96 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0c97 : 68              >            pla         ;load status
-0c98 : 48              >            pha
+0c98 : 68              >            pla         ;load status
                        >            cmp_flag minus
 0c99 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -3333,12 +3330,12 @@ ffff =                  ram_top = -1
 0ca5 : aa                       tax
                                 tst_x $ff,$ff-zero
 0ca6 : 08              >            php         ;save flags
-0ca7 : e0ff            >            cpx #$ff     ;test result
+0ca7 : 08              >            php
+0ca8 : e0ff            >            cpx #$ff     ;test result
                        >            trap_ne
-0ca9 : d0fe            >        bne *           ;failed not equal (non zero)
+0caa : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0cab : 68              >            pla         ;load status
-0cac : 48              >            pha
+0cac : 68              >            pla         ;load status
                        >            cmp_flag $ff-zero
 0cad : c9fd            >            cmp #($ff-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3354,12 +3351,12 @@ ffff =                  ram_top = -1
 0cb6 : aa                       tax
                                 tst_x 0,$ff-minus
 0cb7 : 08              >            php         ;save flags
-0cb8 : e000            >            cpx #0     ;test result
+0cb8 : 08              >            php
+0cb9 : e000            >            cpx #0     ;test result
                        >            trap_ne
-0cba : d0fe            >        bne *           ;failed not equal (non zero)
+0cbb : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0cbc : 68              >            pla         ;load status
-0cbd : 48              >            pha
+0cbd : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus
 0cbe : c97f            >            cmp #($ff-minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -3375,12 +3372,12 @@ ffff =                  ram_top = -1
 0cc7 : aa                       tax
                                 tst_x 1,$ff-minus-zero
 0cc8 : 08              >            php         ;save flags
-0cc9 : e001            >            cpx #1     ;test result
+0cc9 : 08              >            php
+0cca : e001            >            cpx #1     ;test result
                        >            trap_ne
-0ccb : d0fe            >        bne *           ;failed not equal (non zero)
+0ccc : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0ccd : 68              >            pla         ;load status
-0cce : 48              >            pha
+0cce : 68              >            pla         ;load status
                        >            cmp_flag $ff-minus-zero
 0ccf : c97d            >            cmp #($ff-minus-zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3399,12 +3396,12 @@ ffff =                  ram_top = -1
 0cdb : aa                       tax
                                 tst_x 1,0
 0cdc : 08              >            php         ;save flags
-0cdd : e001            >            cpx #1     ;test result
+0cdd : 08              >            php
+0cde : e001            >            cpx #1     ;test result
                        >            trap_ne
-0cdf : d0fe            >        bne *           ;failed not equal (non zero)
+0ce0 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0ce1 : 68              >            pla         ;load status
-0ce2 : 48              >            pha
+0ce2 : 68              >            pla         ;load status
                        >            cmp_flag 0
 0ce3 : c930            >            cmp #(0|fao)&m8    ;expected flags + always on bits
                        >
@@ -3420,12 +3417,12 @@ ffff =                  ram_top = -1
 0cec : aa                       tax
                                 tst_x 0,zero
 0ced : 08              >            php         ;save flags
-0cee : e000            >            cpx #0     ;test result
+0cee : 08              >            php
+0cef : e000            >            cpx #0     ;test result
                        >            trap_ne
-0cf0 : d0fe            >        bne *           ;failed not equal (non zero)
+0cf1 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0cf2 : 68              >            pla         ;load status
-0cf3 : 48              >            pha
+0cf3 : 68              >            pla         ;load status
                        >            cmp_flag zero
 0cf4 : c932            >            cmp #(zero|fao)&m8    ;expected flags + always on bits
                        >
@@ -3441,12 +3438,12 @@ ffff =                  ram_top = -1
 0cfd : aa                       tax
                                 tst_x $ff,minus
 0cfe : 08              >            php         ;save flags
-0cff : e0ff            >            cpx #$ff     ;test result
+0cff : 08              >            php
+0d00 : e0ff            >            cpx #$ff     ;test result
                        >            trap_ne
-0d01 : d0fe            >        bne *           ;failed not equal (non zero)
+0d02 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-0d03 : 68              >            pla         ;load status
-0d04 : 48              >            pha
+0d04 : 68              >            pla         ;load status
                        >            cmp_flag minus
 0d05 : c9b0            >            cmp #(minus|fao)&m8    ;expected flags + always on bits
                        >
@@ -6699,12 +6696,12 @@ ffff =                  ram_top = -1
 1b02 : 2416                     bit zp1+3   ;00 - should set Z / clear  NV
                                 tst_a $ff,fz 
 1b04 : 08              >            php         ;save flags
-1b05 : c9ff            >            cmp #$ff     ;test result
+1b05 : 08              >            php
+1b06 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-1b07 : d0fe            >        bne *           ;failed not equal (non zero)
+1b08 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b09 : 68              >            pla         ;load status
-1b0a : 48              >            pha
+1b0a : 68              >            pla         ;load status
                        >            cmp_flag fz 
 1b0b : c932            >            cmp #(fz |fao)&m8    ;expected flags + always on bits
                        >
@@ -6724,12 +6721,12 @@ ffff =                  ram_top = -1
 1b16 : 2415                     bit zp1+2   ;41 - should set V (M6) / clear NZ
                                 tst_a 1,fv
 1b18 : 08              >            php         ;save flags
-1b19 : c901            >            cmp #1     ;test result
+1b19 : 08              >            php
+1b1a : c901            >            cmp #1     ;test result
                        >            trap_ne
-1b1b : d0fe            >        bne *           ;failed not equal (non zero)
+1b1c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b1d : 68              >            pla         ;load status
-1b1e : 48              >            pha
+1b1e : 68              >            pla         ;load status
                        >            cmp_flag fv
 1b1f : c970            >            cmp #(fv|fao)&m8    ;expected flags + always on bits
                        >
@@ -6749,12 +6746,12 @@ ffff =                  ram_top = -1
 1b2a : 2414                     bit zp1+1   ;82 - should set N (M7) & Z / clear V
                                 tst_a 1,fnz
 1b2c : 08              >            php         ;save flags
-1b2d : c901            >            cmp #1     ;test result
+1b2d : 08              >            php
+1b2e : c901            >            cmp #1     ;test result
                        >            trap_ne
-1b2f : d0fe            >        bne *           ;failed not equal (non zero)
+1b30 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b31 : 68              >            pla         ;load status
-1b32 : 48              >            pha
+1b32 : 68              >            pla         ;load status
                        >            cmp_flag fnz
 1b33 : c9b2            >            cmp #(fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -6774,12 +6771,12 @@ ffff =                  ram_top = -1
 1b3e : 2413                     bit zp1     ;c3 - should set N (M7) & V (M6) / clear Z
                                 tst_a 1,fnv
 1b40 : 08              >            php         ;save flags
-1b41 : c901            >            cmp #1     ;test result
+1b41 : 08              >            php
+1b42 : c901            >            cmp #1     ;test result
                        >            trap_ne
-1b43 : d0fe            >        bne *           ;failed not equal (non zero)
+1b44 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b45 : 68              >            pla         ;load status
-1b46 : 48              >            pha
+1b46 : 68              >            pla         ;load status
                        >            cmp_flag fnv
 1b47 : c9f0            >            cmp #(fnv|fao)&m8    ;expected flags + always on bits
                        >
@@ -6800,12 +6797,12 @@ ffff =                  ram_top = -1
 1b52 : 2416                     bit zp1+3   ;00 - should set Z / clear  NV
                                 tst_a $ff,~fnv 
 1b54 : 08              >            php         ;save flags
-1b55 : c9ff            >            cmp #$ff     ;test result
+1b55 : 08              >            php
+1b56 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-1b57 : d0fe            >        bne *           ;failed not equal (non zero)
+1b58 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b59 : 68              >            pla         ;load status
-1b5a : 48              >            pha
+1b5a : 68              >            pla         ;load status
                        >            cmp_flag ~fnv 
 1b5b : c93f            >            cmp #(~fnv |fao)&m8    ;expected flags + always on bits
                        >
@@ -6825,12 +6822,12 @@ ffff =                  ram_top = -1
 1b66 : 2415                     bit zp1+2   ;41 - should set V (M6) / clear NZ
                                 tst_a 1,~fnz
 1b68 : 08              >            php         ;save flags
-1b69 : c901            >            cmp #1     ;test result
+1b69 : 08              >            php
+1b6a : c901            >            cmp #1     ;test result
                        >            trap_ne
-1b6b : d0fe            >        bne *           ;failed not equal (non zero)
+1b6c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b6d : 68              >            pla         ;load status
-1b6e : 48              >            pha
+1b6e : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 1b6f : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -6850,12 +6847,12 @@ ffff =                  ram_top = -1
 1b7a : 2414                     bit zp1+1   ;82 - should set N (M7) & Z / clear V
                                 tst_a 1,~fv
 1b7c : 08              >            php         ;save flags
-1b7d : c901            >            cmp #1     ;test result
+1b7d : 08              >            php
+1b7e : c901            >            cmp #1     ;test result
                        >            trap_ne
-1b7f : d0fe            >        bne *           ;failed not equal (non zero)
+1b80 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b81 : 68              >            pla         ;load status
-1b82 : 48              >            pha
+1b82 : 68              >            pla         ;load status
                        >            cmp_flag ~fv
 1b83 : c9bf            >            cmp #(~fv|fao)&m8    ;expected flags + always on bits
                        >
@@ -6875,12 +6872,12 @@ ffff =                  ram_top = -1
 1b8e : 2413                     bit zp1     ;c3 - should set N (M7) & V (M6) / clear Z
                                 tst_a 1,~fz
 1b90 : 08              >            php         ;save flags
-1b91 : c901            >            cmp #1     ;test result
+1b91 : 08              >            php
+1b92 : c901            >            cmp #1     ;test result
                        >            trap_ne
-1b93 : d0fe            >        bne *           ;failed not equal (non zero)
+1b94 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1b95 : 68              >            pla         ;load status
-1b96 : 48              >            pha
+1b96 : 68              >            pla         ;load status
                        >            cmp_flag ~fz
 1b97 : c9fd            >            cmp #(~fz|fao)&m8    ;expected flags + always on bits
                        >
@@ -6901,12 +6898,12 @@ ffff =                  ram_top = -1
 1ba2 : 2c0b02                   bit abs1+3  ;00 - should set Z / clear  NV
                                 tst_a $ff,fz 
 1ba5 : 08              >            php         ;save flags
-1ba6 : c9ff            >            cmp #$ff     ;test result
+1ba6 : 08              >            php
+1ba7 : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-1ba8 : d0fe            >        bne *           ;failed not equal (non zero)
+1ba9 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1baa : 68              >            pla         ;load status
-1bab : 48              >            pha
+1bab : 68              >            pla         ;load status
                        >            cmp_flag fz 
 1bac : c932            >            cmp #(fz |fao)&m8    ;expected flags + always on bits
                        >
@@ -6926,12 +6923,12 @@ ffff =                  ram_top = -1
 1bb7 : 2c0a02                   bit abs1+2  ;41 - should set V (M6) / clear NZ
                                 tst_a 1,fv
 1bba : 08              >            php         ;save flags
-1bbb : c901            >            cmp #1     ;test result
+1bbb : 08              >            php
+1bbc : c901            >            cmp #1     ;test result
                        >            trap_ne
-1bbd : d0fe            >        bne *           ;failed not equal (non zero)
+1bbe : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1bbf : 68              >            pla         ;load status
-1bc0 : 48              >            pha
+1bc0 : 68              >            pla         ;load status
                        >            cmp_flag fv
 1bc1 : c970            >            cmp #(fv|fao)&m8    ;expected flags + always on bits
                        >
@@ -6951,12 +6948,12 @@ ffff =                  ram_top = -1
 1bcc : 2c0902                   bit abs1+1  ;82 - should set N (M7) & Z / clear V
                                 tst_a 1,fnz
 1bcf : 08              >            php         ;save flags
-1bd0 : c901            >            cmp #1     ;test result
+1bd0 : 08              >            php
+1bd1 : c901            >            cmp #1     ;test result
                        >            trap_ne
-1bd2 : d0fe            >        bne *           ;failed not equal (non zero)
+1bd3 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1bd4 : 68              >            pla         ;load status
-1bd5 : 48              >            pha
+1bd5 : 68              >            pla         ;load status
                        >            cmp_flag fnz
 1bd6 : c9b2            >            cmp #(fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -6976,12 +6973,12 @@ ffff =                  ram_top = -1
 1be1 : 2c0802                   bit abs1    ;c3 - should set N (M7) & V (M6) / clear Z
                                 tst_a 1,fnv
 1be4 : 08              >            php         ;save flags
-1be5 : c901            >            cmp #1     ;test result
+1be5 : 08              >            php
+1be6 : c901            >            cmp #1     ;test result
                        >            trap_ne
-1be7 : d0fe            >        bne *           ;failed not equal (non zero)
+1be8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1be9 : 68              >            pla         ;load status
-1bea : 48              >            pha
+1bea : 68              >            pla         ;load status
                        >            cmp_flag fnv
 1beb : c9f0            >            cmp #(fnv|fao)&m8    ;expected flags + always on bits
                        >
@@ -7002,12 +6999,12 @@ ffff =                  ram_top = -1
 1bf6 : 2c0b02                   bit abs1+3  ;00 - should set Z / clear  NV
                                 tst_a $ff,~fnv 
 1bf9 : 08              >            php         ;save flags
-1bfa : c9ff            >            cmp #$ff     ;test result
+1bfa : 08              >            php
+1bfb : c9ff            >            cmp #$ff     ;test result
                        >            trap_ne
-1bfc : d0fe            >        bne *           ;failed not equal (non zero)
+1bfd : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1bfe : 68              >            pla         ;load status
-1bff : 48              >            pha
+1bff : 68              >            pla         ;load status
                        >            cmp_flag ~fnv 
 1c00 : c93f            >            cmp #(~fnv |fao)&m8    ;expected flags + always on bits
                        >
@@ -7027,12 +7024,12 @@ ffff =                  ram_top = -1
 1c0b : 2c0a02                   bit abs1+2  ;41 - should set V (M6) / clear NZ
                                 tst_a 1,~fnz
 1c0e : 08              >            php         ;save flags
-1c0f : c901            >            cmp #1     ;test result
+1c0f : 08              >            php
+1c10 : c901            >            cmp #1     ;test result
                        >            trap_ne
-1c11 : d0fe            >        bne *           ;failed not equal (non zero)
+1c12 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1c13 : 68              >            pla         ;load status
-1c14 : 48              >            pha
+1c14 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 1c15 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7052,12 +7049,12 @@ ffff =                  ram_top = -1
 1c20 : 2c0902                   bit abs1+1  ;82 - should set N (M7) & Z / clear V
                                 tst_a 1,~fv
 1c23 : 08              >            php         ;save flags
-1c24 : c901            >            cmp #1     ;test result
+1c24 : 08              >            php
+1c25 : c901            >            cmp #1     ;test result
                        >            trap_ne
-1c26 : d0fe            >        bne *           ;failed not equal (non zero)
+1c27 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1c28 : 68              >            pla         ;load status
-1c29 : 48              >            pha
+1c29 : 68              >            pla         ;load status
                        >            cmp_flag ~fv
 1c2a : c9bf            >            cmp #(~fv|fao)&m8    ;expected flags + always on bits
                        >
@@ -7077,12 +7074,12 @@ ffff =                  ram_top = -1
 1c35 : 2c0802                   bit abs1    ;c3 - should set N (M7) & V (M6) / clear Z
                                 tst_a 1,~fz
 1c38 : 08              >            php         ;save flags
-1c39 : c901            >            cmp #1     ;test result
+1c39 : 08              >            php
+1c3a : c901            >            cmp #1     ;test result
                        >            trap_ne
-1c3b : d0fe            >        bne *           ;failed not equal (non zero)
+1c3c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1c3d : 68              >            pla         ;load status
-1c3e : 48              >            pha
+1c3e : 68              >            pla         ;load status
                        >            cmp_flag ~fz
 1c3f : c9fd            >            cmp #(~fz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7115,8 +7112,8 @@ ffff =                  ram_top = -1
 1c56 : e417                     cpx zp7f
                                 tst_stat fc
 1c58 : 08              >            php         ;save status
-1c59 : 68              >            pla         ;use stack to retrieve status
-1c5a : 48              >            pha
+1c59 : 08              >            php         ;use stack to retrieve status
+1c5a : 68              >            pla
                        >            cmp_flag fc
 1c5b : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7129,8 +7126,8 @@ ffff =                  ram_top = -1
 1c61 : e417                     cpx zp7f
                                 tst_stat fzc
 1c63 : 08              >            php         ;save status
-1c64 : 68              >            pla         ;use stack to retrieve status
-1c65 : 48              >            pha
+1c64 : 08              >            php         ;use stack to retrieve status
+1c65 : 68              >            pla
                        >            cmp_flag fzc
 1c66 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7143,12 +7140,12 @@ ffff =                  ram_top = -1
 1c6c : e417                     cpx zp7f
                                 tst_x $7e,fn
 1c6e : 08              >            php         ;save flags
-1c6f : e07e            >            cpx #$7e     ;test result
+1c6f : 08              >            php
+1c70 : e07e            >            cpx #$7e     ;test result
                        >            trap_ne
-1c71 : d0fe            >        bne *           ;failed not equal (non zero)
+1c72 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1c73 : 68              >            pla         ;load status
-1c74 : 48              >            pha
+1c74 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1c75 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7168,8 +7165,8 @@ ffff =                  ram_top = -1
 1c80 : e417                     cpx zp7f
                                 tst_stat ~fnz
 1c82 : 08              >            php         ;save status
-1c83 : 68              >            pla         ;use stack to retrieve status
-1c84 : 48              >            pha
+1c83 : 08              >            php         ;use stack to retrieve status
+1c84 : 68              >            pla
                        >            cmp_flag ~fnz
 1c85 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7182,8 +7179,8 @@ ffff =                  ram_top = -1
 1c8b : e417                     cpx zp7f
                                 tst_stat ~fn
 1c8d : 08              >            php         ;save status
-1c8e : 68              >            pla         ;use stack to retrieve status
-1c8f : 48              >            pha
+1c8e : 08              >            php         ;use stack to retrieve status
+1c8f : 68              >            pla
                        >            cmp_flag ~fn
 1c90 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7196,12 +7193,12 @@ ffff =                  ram_top = -1
 1c96 : e417                     cpx zp7f
                                 tst_x $7e,~fzc
 1c98 : 08              >            php         ;save flags
-1c99 : e07e            >            cpx #$7e     ;test result
+1c99 : 08              >            php
+1c9a : e07e            >            cpx #$7e     ;test result
                        >            trap_ne
-1c9b : d0fe            >        bne *           ;failed not equal (non zero)
+1c9c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1c9d : 68              >            pla         ;load status
-1c9e : 48              >            pha
+1c9e : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1c9f : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7222,8 +7219,8 @@ ffff =                  ram_top = -1
 1caa : ec0c02                   cpx abs7f
                                 tst_stat fc
 1cad : 08              >            php         ;save status
-1cae : 68              >            pla         ;use stack to retrieve status
-1caf : 48              >            pha
+1cae : 08              >            php         ;use stack to retrieve status
+1caf : 68              >            pla
                        >            cmp_flag fc
 1cb0 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7236,8 +7233,8 @@ ffff =                  ram_top = -1
 1cb6 : ec0c02                   cpx abs7f
                                 tst_stat fzc
 1cb9 : 08              >            php         ;save status
-1cba : 68              >            pla         ;use stack to retrieve status
-1cbb : 48              >            pha
+1cba : 08              >            php         ;use stack to retrieve status
+1cbb : 68              >            pla
                        >            cmp_flag fzc
 1cbc : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7250,12 +7247,12 @@ ffff =                  ram_top = -1
 1cc2 : ec0c02                   cpx abs7f
                                 tst_x $7e,fn
 1cc5 : 08              >            php         ;save flags
-1cc6 : e07e            >            cpx #$7e     ;test result
+1cc6 : 08              >            php
+1cc7 : e07e            >            cpx #$7e     ;test result
                        >            trap_ne
-1cc8 : d0fe            >        bne *           ;failed not equal (non zero)
+1cc9 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1cca : 68              >            pla         ;load status
-1ccb : 48              >            pha
+1ccb : 68              >            pla         ;load status
                        >            cmp_flag fn
 1ccc : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7275,8 +7272,8 @@ ffff =                  ram_top = -1
 1cd7 : ec0c02                   cpx abs7f
                                 tst_stat ~fnz
 1cda : 08              >            php         ;save status
-1cdb : 68              >            pla         ;use stack to retrieve status
-1cdc : 48              >            pha
+1cdb : 08              >            php         ;use stack to retrieve status
+1cdc : 68              >            pla
                        >            cmp_flag ~fnz
 1cdd : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7289,8 +7286,8 @@ ffff =                  ram_top = -1
 1ce3 : ec0c02                   cpx abs7f
                                 tst_stat ~fn
 1ce6 : 08              >            php         ;save status
-1ce7 : 68              >            pla         ;use stack to retrieve status
-1ce8 : 48              >            pha
+1ce7 : 08              >            php         ;use stack to retrieve status
+1ce8 : 68              >            pla
                        >            cmp_flag ~fn
 1ce9 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7303,12 +7300,12 @@ ffff =                  ram_top = -1
 1cef : ec0c02                   cpx abs7f
                                 tst_x $7e,~fzc
 1cf2 : 08              >            php         ;save flags
-1cf3 : e07e            >            cpx #$7e     ;test result
+1cf3 : 08              >            php
+1cf4 : e07e            >            cpx #$7e     ;test result
                        >            trap_ne
-1cf5 : d0fe            >        bne *           ;failed not equal (non zero)
+1cf6 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1cf7 : 68              >            pla         ;load status
-1cf8 : 48              >            pha
+1cf8 : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1cf9 : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7329,8 +7326,8 @@ ffff =                  ram_top = -1
 1d04 : e07f                     cpx #$7f
                                 tst_stat fc
 1d06 : 08              >            php         ;save status
-1d07 : 68              >            pla         ;use stack to retrieve status
-1d08 : 48              >            pha
+1d07 : 08              >            php         ;use stack to retrieve status
+1d08 : 68              >            pla
                        >            cmp_flag fc
 1d09 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7343,8 +7340,8 @@ ffff =                  ram_top = -1
 1d0f : e07f                     cpx #$7f
                                 tst_stat fzc
 1d11 : 08              >            php         ;save status
-1d12 : 68              >            pla         ;use stack to retrieve status
-1d13 : 48              >            pha
+1d12 : 08              >            php         ;use stack to retrieve status
+1d13 : 68              >            pla
                        >            cmp_flag fzc
 1d14 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7357,12 +7354,12 @@ ffff =                  ram_top = -1
 1d1a : e07f                     cpx #$7f
                                 tst_x $7e,fn
 1d1c : 08              >            php         ;save flags
-1d1d : e07e            >            cpx #$7e     ;test result
+1d1d : 08              >            php
+1d1e : e07e            >            cpx #$7e     ;test result
                        >            trap_ne
-1d1f : d0fe            >        bne *           ;failed not equal (non zero)
+1d20 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1d21 : 68              >            pla         ;load status
-1d22 : 48              >            pha
+1d22 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1d23 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7382,8 +7379,8 @@ ffff =                  ram_top = -1
 1d2e : e07f                     cpx #$7f
                                 tst_stat ~fnz
 1d30 : 08              >            php         ;save status
-1d31 : 68              >            pla         ;use stack to retrieve status
-1d32 : 48              >            pha
+1d31 : 08              >            php         ;use stack to retrieve status
+1d32 : 68              >            pla
                        >            cmp_flag ~fnz
 1d33 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7396,8 +7393,8 @@ ffff =                  ram_top = -1
 1d39 : e07f                     cpx #$7f
                                 tst_stat ~fn
 1d3b : 08              >            php         ;save status
-1d3c : 68              >            pla         ;use stack to retrieve status
-1d3d : 48              >            pha
+1d3c : 08              >            php         ;use stack to retrieve status
+1d3d : 68              >            pla
                        >            cmp_flag ~fn
 1d3e : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7410,12 +7407,12 @@ ffff =                  ram_top = -1
 1d44 : e07f                     cpx #$7f
                                 tst_x $7e,~fzc
 1d46 : 08              >            php         ;save flags
-1d47 : e07e            >            cpx #$7e     ;test result
+1d47 : 08              >            php
+1d48 : e07e            >            cpx #$7e     ;test result
                        >            trap_ne
-1d49 : d0fe            >        bne *           ;failed not equal (non zero)
+1d4a : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1d4b : 68              >            pla         ;load status
-1d4c : 48              >            pha
+1d4c : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1d4d : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7448,8 +7445,8 @@ ffff =                  ram_top = -1
 1d64 : c417                     cpy zp7f
                                 tst_stat fc
 1d66 : 08              >            php         ;save status
-1d67 : 68              >            pla         ;use stack to retrieve status
-1d68 : 48              >            pha
+1d67 : 08              >            php         ;use stack to retrieve status
+1d68 : 68              >            pla
                        >            cmp_flag fc
 1d69 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7462,8 +7459,8 @@ ffff =                  ram_top = -1
 1d6f : c417                     cpy zp7f
                                 tst_stat fzc
 1d71 : 08              >            php         ;save status
-1d72 : 68              >            pla         ;use stack to retrieve status
-1d73 : 48              >            pha
+1d72 : 08              >            php         ;use stack to retrieve status
+1d73 : 68              >            pla
                        >            cmp_flag fzc
 1d74 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7476,12 +7473,12 @@ ffff =                  ram_top = -1
 1d7a : c417                     cpy zp7f
                                 tst_y $7e,fn
 1d7c : 08              >            php         ;save flags
-1d7d : c07e            >            cpy #$7e     ;test result
+1d7d : 08              >            php
+1d7e : c07e            >            cpy #$7e     ;test result
                        >            trap_ne
-1d7f : d0fe            >        bne *           ;failed not equal (non zero)
+1d80 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1d81 : 68              >            pla         ;load status
-1d82 : 48              >            pha
+1d82 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1d83 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7501,8 +7498,8 @@ ffff =                  ram_top = -1
 1d8e : c417                     cpy zp7f
                                 tst_stat ~fnz
 1d90 : 08              >            php         ;save status
-1d91 : 68              >            pla         ;use stack to retrieve status
-1d92 : 48              >            pha
+1d91 : 08              >            php         ;use stack to retrieve status
+1d92 : 68              >            pla
                        >            cmp_flag ~fnz
 1d93 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7515,8 +7512,8 @@ ffff =                  ram_top = -1
 1d99 : c417                     cpy zp7f
                                 tst_stat ~fn
 1d9b : 08              >            php         ;save status
-1d9c : 68              >            pla         ;use stack to retrieve status
-1d9d : 48              >            pha
+1d9c : 08              >            php         ;use stack to retrieve status
+1d9d : 68              >            pla
                        >            cmp_flag ~fn
 1d9e : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7529,12 +7526,12 @@ ffff =                  ram_top = -1
 1da4 : c417                     cpy zp7f
                                 tst_y $7e,~fzc
 1da6 : 08              >            php         ;save flags
-1da7 : c07e            >            cpy #$7e     ;test result
+1da7 : 08              >            php
+1da8 : c07e            >            cpy #$7e     ;test result
                        >            trap_ne
-1da9 : d0fe            >        bne *           ;failed not equal (non zero)
+1daa : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1dab : 68              >            pla         ;load status
-1dac : 48              >            pha
+1dac : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1dad : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7555,8 +7552,8 @@ ffff =                  ram_top = -1
 1db8 : cc0c02                   cpy abs7f
                                 tst_stat fc
 1dbb : 08              >            php         ;save status
-1dbc : 68              >            pla         ;use stack to retrieve status
-1dbd : 48              >            pha
+1dbc : 08              >            php         ;use stack to retrieve status
+1dbd : 68              >            pla
                        >            cmp_flag fc
 1dbe : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7569,8 +7566,8 @@ ffff =                  ram_top = -1
 1dc4 : cc0c02                   cpy abs7f
                                 tst_stat fzc
 1dc7 : 08              >            php         ;save status
-1dc8 : 68              >            pla         ;use stack to retrieve status
-1dc9 : 48              >            pha
+1dc8 : 08              >            php         ;use stack to retrieve status
+1dc9 : 68              >            pla
                        >            cmp_flag fzc
 1dca : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7583,12 +7580,12 @@ ffff =                  ram_top = -1
 1dd0 : cc0c02                   cpy abs7f
                                 tst_y $7e,fn
 1dd3 : 08              >            php         ;save flags
-1dd4 : c07e            >            cpy #$7e     ;test result
+1dd4 : 08              >            php
+1dd5 : c07e            >            cpy #$7e     ;test result
                        >            trap_ne
-1dd6 : d0fe            >        bne *           ;failed not equal (non zero)
+1dd7 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1dd8 : 68              >            pla         ;load status
-1dd9 : 48              >            pha
+1dd9 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1dda : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7608,8 +7605,8 @@ ffff =                  ram_top = -1
 1de5 : cc0c02                   cpy abs7f
                                 tst_stat ~fnz
 1de8 : 08              >            php         ;save status
-1de9 : 68              >            pla         ;use stack to retrieve status
-1dea : 48              >            pha
+1de9 : 08              >            php         ;use stack to retrieve status
+1dea : 68              >            pla
                        >            cmp_flag ~fnz
 1deb : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7622,8 +7619,8 @@ ffff =                  ram_top = -1
 1df1 : cc0c02                   cpy abs7f
                                 tst_stat ~fn
 1df4 : 08              >            php         ;save status
-1df5 : 68              >            pla         ;use stack to retrieve status
-1df6 : 48              >            pha
+1df5 : 08              >            php         ;use stack to retrieve status
+1df6 : 68              >            pla
                        >            cmp_flag ~fn
 1df7 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7636,12 +7633,12 @@ ffff =                  ram_top = -1
 1dfd : cc0c02                   cpy abs7f
                                 tst_y $7e,~fzc
 1e00 : 08              >            php         ;save flags
-1e01 : c07e            >            cpy #$7e     ;test result
+1e01 : 08              >            php
+1e02 : c07e            >            cpy #$7e     ;test result
                        >            trap_ne
-1e03 : d0fe            >        bne *           ;failed not equal (non zero)
+1e04 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1e05 : 68              >            pla         ;load status
-1e06 : 48              >            pha
+1e06 : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1e07 : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7662,8 +7659,8 @@ ffff =                  ram_top = -1
 1e12 : c07f                     cpy #$7f
                                 tst_stat fc
 1e14 : 08              >            php         ;save status
-1e15 : 68              >            pla         ;use stack to retrieve status
-1e16 : 48              >            pha
+1e15 : 08              >            php         ;use stack to retrieve status
+1e16 : 68              >            pla
                        >            cmp_flag fc
 1e17 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7676,8 +7673,8 @@ ffff =                  ram_top = -1
 1e1d : c07f                     cpy #$7f
                                 tst_stat fzc
 1e1f : 08              >            php         ;save status
-1e20 : 68              >            pla         ;use stack to retrieve status
-1e21 : 48              >            pha
+1e20 : 08              >            php         ;use stack to retrieve status
+1e21 : 68              >            pla
                        >            cmp_flag fzc
 1e22 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7690,12 +7687,12 @@ ffff =                  ram_top = -1
 1e28 : c07f                     cpy #$7f
                                 tst_y $7e,fn
 1e2a : 08              >            php         ;save flags
-1e2b : c07e            >            cpy #$7e     ;test result
+1e2b : 08              >            php
+1e2c : c07e            >            cpy #$7e     ;test result
                        >            trap_ne
-1e2d : d0fe            >        bne *           ;failed not equal (non zero)
+1e2e : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1e2f : 68              >            pla         ;load status
-1e30 : 48              >            pha
+1e30 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1e31 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7715,8 +7712,8 @@ ffff =                  ram_top = -1
 1e3c : c07f                     cpy #$7f
                                 tst_stat ~fnz
 1e3e : 08              >            php         ;save status
-1e3f : 68              >            pla         ;use stack to retrieve status
-1e40 : 48              >            pha
+1e3f : 08              >            php         ;use stack to retrieve status
+1e40 : 68              >            pla
                        >            cmp_flag ~fnz
 1e41 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7729,8 +7726,8 @@ ffff =                  ram_top = -1
 1e47 : c07f                     cpy #$7f
                                 tst_stat ~fn
 1e49 : 08              >            php         ;save status
-1e4a : 68              >            pla         ;use stack to retrieve status
-1e4b : 48              >            pha
+1e4a : 08              >            php         ;use stack to retrieve status
+1e4b : 68              >            pla
                        >            cmp_flag ~fn
 1e4c : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7743,12 +7740,12 @@ ffff =                  ram_top = -1
 1e52 : c07f                     cpy #$7f
                                 tst_y $7e,~fzc
 1e54 : 08              >            php         ;save flags
-1e55 : c07e            >            cpy #$7e     ;test result
+1e55 : 08              >            php
+1e56 : c07e            >            cpy #$7e     ;test result
                        >            trap_ne
-1e57 : d0fe            >        bne *           ;failed not equal (non zero)
+1e58 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1e59 : 68              >            pla         ;load status
-1e5a : 48              >            pha
+1e5a : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1e5b : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7781,12 +7778,12 @@ ffff =                  ram_top = -1
 1e72 : c517                     cmp zp7f
                                 tst_a $80,fc
 1e74 : 08              >            php         ;save flags
-1e75 : c980            >            cmp #$80     ;test result
+1e75 : 08              >            php
+1e76 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1e77 : d0fe            >        bne *           ;failed not equal (non zero)
+1e78 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1e79 : 68              >            pla         ;load status
-1e7a : 48              >            pha
+1e7a : 68              >            pla         ;load status
                        >            cmp_flag fc
 1e7b : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7806,12 +7803,12 @@ ffff =                  ram_top = -1
 1e86 : c517                     cmp zp7f
                                 tst_a $7f,fzc
 1e88 : 08              >            php         ;save flags
-1e89 : c97f            >            cmp #$7f     ;test result
+1e89 : 08              >            php
+1e8a : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1e8b : d0fe            >        bne *           ;failed not equal (non zero)
+1e8c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1e8d : 68              >            pla         ;load status
-1e8e : 48              >            pha
+1e8e : 68              >            pla         ;load status
                        >            cmp_flag fzc
 1e8f : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7831,12 +7828,12 @@ ffff =                  ram_top = -1
 1e9a : c517                     cmp zp7f
                                 tst_a $7e,fn
 1e9c : 08              >            php         ;save flags
-1e9d : c97e            >            cmp #$7e     ;test result
+1e9d : 08              >            php
+1e9e : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-1e9f : d0fe            >        bne *           ;failed not equal (non zero)
+1ea0 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1ea1 : 68              >            pla         ;load status
-1ea2 : 48              >            pha
+1ea2 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1ea3 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7856,12 +7853,12 @@ ffff =                  ram_top = -1
 1eae : c517                     cmp zp7f
                                 tst_a $80,~fnz
 1eb0 : 08              >            php         ;save flags
-1eb1 : c980            >            cmp #$80     ;test result
+1eb1 : 08              >            php
+1eb2 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1eb3 : d0fe            >        bne *           ;failed not equal (non zero)
+1eb4 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1eb5 : 68              >            pla         ;load status
-1eb6 : 48              >            pha
+1eb6 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 1eb7 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -7881,12 +7878,12 @@ ffff =                  ram_top = -1
 1ec2 : c517                     cmp zp7f
                                 tst_a $7f,~fn
 1ec4 : 08              >            php         ;save flags
-1ec5 : c97f            >            cmp #$7f     ;test result
+1ec5 : 08              >            php
+1ec6 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1ec7 : d0fe            >        bne *           ;failed not equal (non zero)
+1ec8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1ec9 : 68              >            pla         ;load status
-1eca : 48              >            pha
+1eca : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 1ecb : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -7906,12 +7903,12 @@ ffff =                  ram_top = -1
 1ed6 : c517                     cmp zp7f
                                 tst_a $7e,~fzc
 1ed8 : 08              >            php         ;save flags
-1ed9 : c97e            >            cmp #$7e     ;test result
+1ed9 : 08              >            php
+1eda : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-1edb : d0fe            >        bne *           ;failed not equal (non zero)
+1edc : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1edd : 68              >            pla         ;load status
-1ede : 48              >            pha
+1ede : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1edf : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7932,12 +7929,12 @@ ffff =                  ram_top = -1
 1eea : cd0c02                   cmp abs7f
                                 tst_a $80,fc
 1eed : 08              >            php         ;save flags
-1eee : c980            >            cmp #$80     ;test result
+1eee : 08              >            php
+1eef : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1ef0 : d0fe            >        bne *           ;failed not equal (non zero)
+1ef1 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1ef2 : 68              >            pla         ;load status
-1ef3 : 48              >            pha
+1ef3 : 68              >            pla         ;load status
                        >            cmp_flag fc
 1ef4 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7957,12 +7954,12 @@ ffff =                  ram_top = -1
 1eff : cd0c02                   cmp abs7f
                                 tst_a $7f,fzc
 1f02 : 08              >            php         ;save flags
-1f03 : c97f            >            cmp #$7f     ;test result
+1f03 : 08              >            php
+1f04 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1f05 : d0fe            >        bne *           ;failed not equal (non zero)
+1f06 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f07 : 68              >            pla         ;load status
-1f08 : 48              >            pha
+1f08 : 68              >            pla         ;load status
                        >            cmp_flag fzc
 1f09 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -7982,12 +7979,12 @@ ffff =                  ram_top = -1
 1f14 : cd0c02                   cmp abs7f
                                 tst_a $7e,fn
 1f17 : 08              >            php         ;save flags
-1f18 : c97e            >            cmp #$7e     ;test result
+1f18 : 08              >            php
+1f19 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-1f1a : d0fe            >        bne *           ;failed not equal (non zero)
+1f1b : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f1c : 68              >            pla         ;load status
-1f1d : 48              >            pha
+1f1d : 68              >            pla         ;load status
                        >            cmp_flag fn
 1f1e : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8007,12 +8004,12 @@ ffff =                  ram_top = -1
 1f29 : cd0c02                   cmp abs7f
                                 tst_a $80,~fnz
 1f2c : 08              >            php         ;save flags
-1f2d : c980            >            cmp #$80     ;test result
+1f2d : 08              >            php
+1f2e : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1f2f : d0fe            >        bne *           ;failed not equal (non zero)
+1f30 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f31 : 68              >            pla         ;load status
-1f32 : 48              >            pha
+1f32 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 1f33 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8032,12 +8029,12 @@ ffff =                  ram_top = -1
 1f3e : cd0c02                   cmp abs7f
                                 tst_a $7f,~fn
 1f41 : 08              >            php         ;save flags
-1f42 : c97f            >            cmp #$7f     ;test result
+1f42 : 08              >            php
+1f43 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1f44 : d0fe            >        bne *           ;failed not equal (non zero)
+1f45 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f46 : 68              >            pla         ;load status
-1f47 : 48              >            pha
+1f47 : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 1f48 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8057,12 +8054,12 @@ ffff =                  ram_top = -1
 1f53 : cd0c02                   cmp abs7f
                                 tst_a $7e,~fzc
 1f56 : 08              >            php         ;save flags
-1f57 : c97e            >            cmp #$7e     ;test result
+1f57 : 08              >            php
+1f58 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-1f59 : d0fe            >        bne *           ;failed not equal (non zero)
+1f5a : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f5b : 68              >            pla         ;load status
-1f5c : 48              >            pha
+1f5c : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1f5d : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8083,12 +8080,12 @@ ffff =                  ram_top = -1
 1f68 : c97f                     cmp #$7f
                                 tst_a $80,fc
 1f6a : 08              >            php         ;save flags
-1f6b : c980            >            cmp #$80     ;test result
+1f6b : 08              >            php
+1f6c : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1f6d : d0fe            >        bne *           ;failed not equal (non zero)
+1f6e : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f6f : 68              >            pla         ;load status
-1f70 : 48              >            pha
+1f70 : 68              >            pla         ;load status
                        >            cmp_flag fc
 1f71 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8108,12 +8105,12 @@ ffff =                  ram_top = -1
 1f7c : c97f                     cmp #$7f
                                 tst_a $7f,fzc
 1f7e : 08              >            php         ;save flags
-1f7f : c97f            >            cmp #$7f     ;test result
+1f7f : 08              >            php
+1f80 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1f81 : d0fe            >        bne *           ;failed not equal (non zero)
+1f82 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f83 : 68              >            pla         ;load status
-1f84 : 48              >            pha
+1f84 : 68              >            pla         ;load status
                        >            cmp_flag fzc
 1f85 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8133,12 +8130,12 @@ ffff =                  ram_top = -1
 1f90 : c97f                     cmp #$7f
                                 tst_a $7e,fn
 1f92 : 08              >            php         ;save flags
-1f93 : c97e            >            cmp #$7e     ;test result
+1f93 : 08              >            php
+1f94 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-1f95 : d0fe            >        bne *           ;failed not equal (non zero)
+1f96 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1f97 : 68              >            pla         ;load status
-1f98 : 48              >            pha
+1f98 : 68              >            pla         ;load status
                        >            cmp_flag fn
 1f99 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8158,12 +8155,12 @@ ffff =                  ram_top = -1
 1fa4 : c97f                     cmp #$7f
                                 tst_a $80,~fnz
 1fa6 : 08              >            php         ;save flags
-1fa7 : c980            >            cmp #$80     ;test result
+1fa7 : 08              >            php
+1fa8 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1fa9 : d0fe            >        bne *           ;failed not equal (non zero)
+1faa : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1fab : 68              >            pla         ;load status
-1fac : 48              >            pha
+1fac : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 1fad : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8183,12 +8180,12 @@ ffff =                  ram_top = -1
 1fb8 : c97f                     cmp #$7f
                                 tst_a $7f,~fn
 1fba : 08              >            php         ;save flags
-1fbb : c97f            >            cmp #$7f     ;test result
+1fbb : 08              >            php
+1fbc : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1fbd : d0fe            >        bne *           ;failed not equal (non zero)
+1fbe : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1fbf : 68              >            pla         ;load status
-1fc0 : 48              >            pha
+1fc0 : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 1fc1 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8208,12 +8205,12 @@ ffff =                  ram_top = -1
 1fcc : c97f                     cmp #$7f
                                 tst_a $7e,~fzc
 1fce : 08              >            php         ;save flags
-1fcf : c97e            >            cmp #$7e     ;test result
+1fcf : 08              >            php
+1fd0 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-1fd1 : d0fe            >        bne *           ;failed not equal (non zero)
+1fd2 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1fd3 : 68              >            pla         ;load status
-1fd4 : 48              >            pha
+1fd4 : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 1fd5 : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8235,12 +8232,12 @@ ffff =                  ram_top = -1
 1fe2 : d513                     cmp zp1,x
                                 tst_a $80,fc
 1fe4 : 08              >            php         ;save flags
-1fe5 : c980            >            cmp #$80     ;test result
+1fe5 : 08              >            php
+1fe6 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-1fe7 : d0fe            >        bne *           ;failed not equal (non zero)
+1fe8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1fe9 : 68              >            pla         ;load status
-1fea : 48              >            pha
+1fea : 68              >            pla         ;load status
                        >            cmp_flag fc
 1feb : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8260,12 +8257,12 @@ ffff =                  ram_top = -1
 1ff6 : d513                     cmp zp1,x
                                 tst_a $7f,fzc
 1ff8 : 08              >            php         ;save flags
-1ff9 : c97f            >            cmp #$7f     ;test result
+1ff9 : 08              >            php
+1ffa : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-1ffb : d0fe            >        bne *           ;failed not equal (non zero)
+1ffc : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-1ffd : 68              >            pla         ;load status
-1ffe : 48              >            pha
+1ffe : 68              >            pla         ;load status
                        >            cmp_flag fzc
 1fff : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8285,12 +8282,12 @@ ffff =                  ram_top = -1
 200a : d513                     cmp zp1,x
                                 tst_a $7e,fn
 200c : 08              >            php         ;save flags
-200d : c97e            >            cmp #$7e     ;test result
+200d : 08              >            php
+200e : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-200f : d0fe            >        bne *           ;failed not equal (non zero)
+2010 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2011 : 68              >            pla         ;load status
-2012 : 48              >            pha
+2012 : 68              >            pla         ;load status
                        >            cmp_flag fn
 2013 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8310,12 +8307,12 @@ ffff =                  ram_top = -1
 201e : d513                     cmp zp1,x
                                 tst_a $80,~fnz
 2020 : 08              >            php         ;save flags
-2021 : c980            >            cmp #$80     ;test result
+2021 : 08              >            php
+2022 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-2023 : d0fe            >        bne *           ;failed not equal (non zero)
+2024 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2025 : 68              >            pla         ;load status
-2026 : 48              >            pha
+2026 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 2027 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8335,12 +8332,12 @@ ffff =                  ram_top = -1
 2032 : d513                     cmp zp1,x
                                 tst_a $7f,~fn
 2034 : 08              >            php         ;save flags
-2035 : c97f            >            cmp #$7f     ;test result
+2035 : 08              >            php
+2036 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-2037 : d0fe            >        bne *           ;failed not equal (non zero)
+2038 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2039 : 68              >            pla         ;load status
-203a : 48              >            pha
+203a : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 203b : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8360,12 +8357,12 @@ ffff =                  ram_top = -1
 2046 : d513                     cmp zp1,x
                                 tst_a $7e,~fzc
 2048 : 08              >            php         ;save flags
-2049 : c97e            >            cmp #$7e     ;test result
+2049 : 08              >            php
+204a : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-204b : d0fe            >        bne *           ;failed not equal (non zero)
+204c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-204d : 68              >            pla         ;load status
-204e : 48              >            pha
+204e : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 204f : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8386,12 +8383,12 @@ ffff =                  ram_top = -1
 205a : dd0802                   cmp abs1,x
                                 tst_a $80,fc
 205d : 08              >            php         ;save flags
-205e : c980            >            cmp #$80     ;test result
+205e : 08              >            php
+205f : c980            >            cmp #$80     ;test result
                        >            trap_ne
-2060 : d0fe            >        bne *           ;failed not equal (non zero)
+2061 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2062 : 68              >            pla         ;load status
-2063 : 48              >            pha
+2063 : 68              >            pla         ;load status
                        >            cmp_flag fc
 2064 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8411,12 +8408,12 @@ ffff =                  ram_top = -1
 206f : dd0802                   cmp abs1,x
                                 tst_a $7f,fzc
 2072 : 08              >            php         ;save flags
-2073 : c97f            >            cmp #$7f     ;test result
+2073 : 08              >            php
+2074 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-2075 : d0fe            >        bne *           ;failed not equal (non zero)
+2076 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2077 : 68              >            pla         ;load status
-2078 : 48              >            pha
+2078 : 68              >            pla         ;load status
                        >            cmp_flag fzc
 2079 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8436,12 +8433,12 @@ ffff =                  ram_top = -1
 2084 : dd0802                   cmp abs1,x
                                 tst_a $7e,fn
 2087 : 08              >            php         ;save flags
-2088 : c97e            >            cmp #$7e     ;test result
+2088 : 08              >            php
+2089 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-208a : d0fe            >        bne *           ;failed not equal (non zero)
+208b : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-208c : 68              >            pla         ;load status
-208d : 48              >            pha
+208d : 68              >            pla         ;load status
                        >            cmp_flag fn
 208e : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8461,12 +8458,12 @@ ffff =                  ram_top = -1
 2099 : dd0802                   cmp abs1,x
                                 tst_a $80,~fnz
 209c : 08              >            php         ;save flags
-209d : c980            >            cmp #$80     ;test result
+209d : 08              >            php
+209e : c980            >            cmp #$80     ;test result
                        >            trap_ne
-209f : d0fe            >        bne *           ;failed not equal (non zero)
+20a0 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-20a1 : 68              >            pla         ;load status
-20a2 : 48              >            pha
+20a2 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 20a3 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8486,12 +8483,12 @@ ffff =                  ram_top = -1
 20ae : dd0802                   cmp abs1,x
                                 tst_a $7f,~fn
 20b1 : 08              >            php         ;save flags
-20b2 : c97f            >            cmp #$7f     ;test result
+20b2 : 08              >            php
+20b3 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-20b4 : d0fe            >        bne *           ;failed not equal (non zero)
+20b5 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-20b6 : 68              >            pla         ;load status
-20b7 : 48              >            pha
+20b7 : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 20b8 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8511,12 +8508,12 @@ ffff =                  ram_top = -1
 20c3 : dd0802                   cmp abs1,x
                                 tst_a $7e,~fzc
 20c6 : 08              >            php         ;save flags
-20c7 : c97e            >            cmp #$7e     ;test result
+20c7 : 08              >            php
+20c8 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-20c9 : d0fe            >        bne *           ;failed not equal (non zero)
+20ca : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-20cb : 68              >            pla         ;load status
-20cc : 48              >            pha
+20cc : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 20cd : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8539,12 +8536,12 @@ ffff =                  ram_top = -1
 20dc : d90802                   cmp abs1,y
                                 tst_a $80,fc
 20df : 08              >            php         ;save flags
-20e0 : c980            >            cmp #$80     ;test result
+20e0 : 08              >            php
+20e1 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-20e2 : d0fe            >        bne *           ;failed not equal (non zero)
+20e3 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-20e4 : 68              >            pla         ;load status
-20e5 : 48              >            pha
+20e5 : 68              >            pla         ;load status
                        >            cmp_flag fc
 20e6 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8564,12 +8561,12 @@ ffff =                  ram_top = -1
 20f1 : d90802                   cmp abs1,y
                                 tst_a $7f,fzc
 20f4 : 08              >            php         ;save flags
-20f5 : c97f            >            cmp #$7f     ;test result
+20f5 : 08              >            php
+20f6 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-20f7 : d0fe            >        bne *           ;failed not equal (non zero)
+20f8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-20f9 : 68              >            pla         ;load status
-20fa : 48              >            pha
+20fa : 68              >            pla         ;load status
                        >            cmp_flag fzc
 20fb : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8589,12 +8586,12 @@ ffff =                  ram_top = -1
 2106 : d90802                   cmp abs1,y
                                 tst_a $7e,fn
 2109 : 08              >            php         ;save flags
-210a : c97e            >            cmp #$7e     ;test result
+210a : 08              >            php
+210b : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-210c : d0fe            >        bne *           ;failed not equal (non zero)
+210d : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-210e : 68              >            pla         ;load status
-210f : 48              >            pha
+210f : 68              >            pla         ;load status
                        >            cmp_flag fn
 2110 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8614,12 +8611,12 @@ ffff =                  ram_top = -1
 211b : d90802                   cmp abs1,y
                                 tst_a $80,~fnz
 211e : 08              >            php         ;save flags
-211f : c980            >            cmp #$80     ;test result
+211f : 08              >            php
+2120 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-2121 : d0fe            >        bne *           ;failed not equal (non zero)
+2122 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2123 : 68              >            pla         ;load status
-2124 : 48              >            pha
+2124 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 2125 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8639,12 +8636,12 @@ ffff =                  ram_top = -1
 2130 : d90802                   cmp abs1,y
                                 tst_a $7f,~fn
 2133 : 08              >            php         ;save flags
-2134 : c97f            >            cmp #$7f     ;test result
+2134 : 08              >            php
+2135 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-2136 : d0fe            >        bne *           ;failed not equal (non zero)
+2137 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2138 : 68              >            pla         ;load status
-2139 : 48              >            pha
+2139 : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 213a : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8664,12 +8661,12 @@ ffff =                  ram_top = -1
 2145 : d90802                   cmp abs1,y
                                 tst_a $7e,~fzc
 2148 : 08              >            php         ;save flags
-2149 : c97e            >            cmp #$7e     ;test result
+2149 : 08              >            php
+214a : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-214b : d0fe            >        bne *           ;failed not equal (non zero)
+214c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-214d : 68              >            pla         ;load status
-214e : 48              >            pha
+214e : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 214f : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8690,12 +8687,12 @@ ffff =                  ram_top = -1
 215a : c124                     cmp (ind1,x)
                                 tst_a $80,fc
 215c : 08              >            php         ;save flags
-215d : c980            >            cmp #$80     ;test result
+215d : 08              >            php
+215e : c980            >            cmp #$80     ;test result
                        >            trap_ne
-215f : d0fe            >        bne *           ;failed not equal (non zero)
+2160 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2161 : 68              >            pla         ;load status
-2162 : 48              >            pha
+2162 : 68              >            pla         ;load status
                        >            cmp_flag fc
 2163 : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8715,12 +8712,12 @@ ffff =                  ram_top = -1
 216e : c124                     cmp (ind1,x)
                                 tst_a $7f,fzc
 2170 : 08              >            php         ;save flags
-2171 : c97f            >            cmp #$7f     ;test result
+2171 : 08              >            php
+2172 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-2173 : d0fe            >        bne *           ;failed not equal (non zero)
+2174 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2175 : 68              >            pla         ;load status
-2176 : 48              >            pha
+2176 : 68              >            pla         ;load status
                        >            cmp_flag fzc
 2177 : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8740,12 +8737,12 @@ ffff =                  ram_top = -1
 2182 : c124                     cmp (ind1,x)
                                 tst_a $7e,fn
 2184 : 08              >            php         ;save flags
-2185 : c97e            >            cmp #$7e     ;test result
+2185 : 08              >            php
+2186 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-2187 : d0fe            >        bne *           ;failed not equal (non zero)
+2188 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2189 : 68              >            pla         ;load status
-218a : 48              >            pha
+218a : 68              >            pla         ;load status
                        >            cmp_flag fn
 218b : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8765,12 +8762,12 @@ ffff =                  ram_top = -1
 2196 : c124                     cmp (ind1,x)
                                 tst_a $80,~fnz
 2198 : 08              >            php         ;save flags
-2199 : c980            >            cmp #$80     ;test result
+2199 : 08              >            php
+219a : c980            >            cmp #$80     ;test result
                        >            trap_ne
-219b : d0fe            >        bne *           ;failed not equal (non zero)
+219c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-219d : 68              >            pla         ;load status
-219e : 48              >            pha
+219e : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 219f : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8790,12 +8787,12 @@ ffff =                  ram_top = -1
 21aa : c124                     cmp (ind1,x)
                                 tst_a $7f,~fn
 21ac : 08              >            php         ;save flags
-21ad : c97f            >            cmp #$7f     ;test result
+21ad : 08              >            php
+21ae : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-21af : d0fe            >        bne *           ;failed not equal (non zero)
+21b0 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-21b1 : 68              >            pla         ;load status
-21b2 : 48              >            pha
+21b2 : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 21b3 : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8815,12 +8812,12 @@ ffff =                  ram_top = -1
 21be : c124                     cmp (ind1,x)
                                 tst_a $7e,~fzc
 21c0 : 08              >            php         ;save flags
-21c1 : c97e            >            cmp #$7e     ;test result
+21c1 : 08              >            php
+21c2 : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-21c3 : d0fe            >        bne *           ;failed not equal (non zero)
+21c4 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-21c5 : 68              >            pla         ;load status
-21c6 : 48              >            pha
+21c6 : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 21c7 : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8841,12 +8838,12 @@ ffff =                  ram_top = -1
 21d2 : d124                     cmp (ind1),y
                                 tst_a $80,fc
 21d4 : 08              >            php         ;save flags
-21d5 : c980            >            cmp #$80     ;test result
+21d5 : 08              >            php
+21d6 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-21d7 : d0fe            >        bne *           ;failed not equal (non zero)
+21d8 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-21d9 : 68              >            pla         ;load status
-21da : 48              >            pha
+21da : 68              >            pla         ;load status
                        >            cmp_flag fc
 21db : c931            >            cmp #(fc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8866,12 +8863,12 @@ ffff =                  ram_top = -1
 21e6 : d124                     cmp (ind1),y
                                 tst_a $7f,fzc
 21e8 : 08              >            php         ;save flags
-21e9 : c97f            >            cmp #$7f     ;test result
+21e9 : 08              >            php
+21ea : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-21eb : d0fe            >        bne *           ;failed not equal (non zero)
+21ec : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-21ed : 68              >            pla         ;load status
-21ee : 48              >            pha
+21ee : 68              >            pla         ;load status
                        >            cmp_flag fzc
 21ef : c933            >            cmp #(fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -8891,12 +8888,12 @@ ffff =                  ram_top = -1
 21fa : d124                     cmp (ind1),y
                                 tst_a $7e,fn
 21fc : 08              >            php         ;save flags
-21fd : c97e            >            cmp #$7e     ;test result
+21fd : 08              >            php
+21fe : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-21ff : d0fe            >        bne *           ;failed not equal (non zero)
+2200 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2201 : 68              >            pla         ;load status
-2202 : 48              >            pha
+2202 : 68              >            pla         ;load status
                        >            cmp_flag fn
 2203 : c9b0            >            cmp #(fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8916,12 +8913,12 @@ ffff =                  ram_top = -1
 220e : d124                     cmp (ind1),y
                                 tst_a $80,~fnz
 2210 : 08              >            php         ;save flags
-2211 : c980            >            cmp #$80     ;test result
+2211 : 08              >            php
+2212 : c980            >            cmp #$80     ;test result
                        >            trap_ne
-2213 : d0fe            >        bne *           ;failed not equal (non zero)
+2214 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2215 : 68              >            pla         ;load status
-2216 : 48              >            pha
+2216 : 68              >            pla         ;load status
                        >            cmp_flag ~fnz
 2217 : c97d            >            cmp #(~fnz|fao)&m8    ;expected flags + always on bits
                        >
@@ -8941,12 +8938,12 @@ ffff =                  ram_top = -1
 2222 : d124                     cmp (ind1),y
                                 tst_a $7f,~fn
 2224 : 08              >            php         ;save flags
-2225 : c97f            >            cmp #$7f     ;test result
+2225 : 08              >            php
+2226 : c97f            >            cmp #$7f     ;test result
                        >            trap_ne
-2227 : d0fe            >        bne *           ;failed not equal (non zero)
+2228 : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-2229 : 68              >            pla         ;load status
-222a : 48              >            pha
+222a : 68              >            pla         ;load status
                        >            cmp_flag ~fn
 222b : c97f            >            cmp #(~fn|fao)&m8    ;expected flags + always on bits
                        >
@@ -8966,12 +8963,12 @@ ffff =                  ram_top = -1
 2236 : d124                     cmp (ind1),y
                                 tst_a $7e,~fzc
 2238 : 08              >            php         ;save flags
-2239 : c97e            >            cmp #$7e     ;test result
+2239 : 08              >            php
+223a : c97e            >            cmp #$7e     ;test result
                        >            trap_ne
-223b : d0fe            >        bne *           ;failed not equal (non zero)
+223c : d0fe            >        bne *           ;failed not equal (non zero)
                        >
-223d : 68              >            pla         ;load status
-223e : 48              >            pha
+223e : 68              >            pla         ;load status
                        >            cmp_flag ~fzc
 223f : c9fc            >            cmp #(~fzc|fao)&m8    ;expected flags + always on bits
                        >
@@ -13992,8 +13989,9 @@ fffe : cb36                     dw  irq_trap
                         
 fffa =                          end start
                                     
+                        
 No errors in pass 2.
-Wrote binary from address $0000 through $ffff.
-Total size 65536 bytes.
+Wrote binary from address $000a through $ffff.
+Total size 65526 bytes.
 Program start address is at $0400 (1024).
 
